@@ -21,10 +21,10 @@
 /* Create a dynamically allocated copy of string,
  * changing the encoding from ISO-8859-15 to UTF-8.
 */
-uint8_t char_latin9_to_utf8(const char *const from, const char *const to, uint8_t to_len)
+uint8_t char_latin9_to_utf8(const char *const from, char *const to, uint8_t to_len)
 {
-    /* Clear the tail of the string, setting the trailing NUL. */
-    memset(to, 0, to_len);
+  /* Clear the tail of the string, setting the trailing NUL. */
+  memset(to, 0, to_len);
 
 	const unsigned char  *s = (const unsigned char *)from;
 	unsigned char        *d = (unsigned char *)to;

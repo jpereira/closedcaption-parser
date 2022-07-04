@@ -139,7 +139,7 @@ callback_controls_c0_CS (const CC_ControlCodes_CallbackData_t *d)
 // handler: APR(0x0d): Active Position Return
 // syntax: [apr]
 bool
-callback_controls_c0_APR (const CC_ControlCodes_CallbackData_t *d)
+callback_controls_c0_APR (const CC_ControlCodes_CallbackData_t UNUSED(*d))
 { 
   return TRUE;
 }
@@ -494,8 +494,7 @@ callback_controls_c1_COL (const CC_ControlCodes_CallbackData_t *d)
    if (!(argv[1] != 0x20 || (argv[1] >= 0x48 && argv[1] <= 0x7f)))
        return FALSE;
 
-   if ((argv[1] < 0x48 && argv[1] > 0x7f) && 
-       (argv[1] != 0x20 && (argv[2] < 0x40 && argv[2] > 0x4f)))
+   if ((argv[1] < 0x48 && argv[1] > 0x7f) && (argv[1] != 0x20) && (argv[2] < 0x40 && argv[2] > 0x4f))
    {
      ATV_DEBUG ("Oops! Problemas com valor da cor (0x%02x), talvez payload invalido.!",
                 argv[1]);
@@ -657,7 +656,7 @@ csi_arg_Pn_load (CC_ControlCodes_CallbackData_t *d)
     if ((buf_n > 0 /* algo em 'buf'? */ && d->argv[i] == CTRL_CSI_IB /* token? */)
         || (i+1) == d->argc /* final do buf d->argv[]? */)
     {
-      uint64_t v = strtoul (&buf[0], '\0', 0);
+      uint64_t v = strtoul (&buf[0], NULL, 0);
 
       assert (v <= UINT16_MAX);
 
