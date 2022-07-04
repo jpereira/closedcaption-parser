@@ -1,6 +1,15 @@
-CC := gcc
+LIBNAME := libclosedcaption.so
+CC := $(CC)
 CFLAGS += -W -Wall -I. -Iinclude/
-DEPS = 
+
+CFLAGS += -DDEBUG_PACKET_PES
+# CFLAGS += -DDEBUG_CAPTION_DATA
+# CFLAGS += -DDEBUG_CAPTION_SUPERIMPOSE_SOUND
+# CFLAGS += -DDEBUG_CAPTION_SUPERIMPOSE_BITMAP
+# CFLAGS += -DDEBUG_CAPTION_SUPERIMPOSE_GEOMETRIC
+# CFLAGS += -DDEBUG_CAPTION_MANAGEMENT
+# CFLAGS += -DDEBUG_CAPTION_SUPERIMPOSE_1BYTEDRCS
+# CFLAGS += -DDEBUG_CAPTION_CLOSED_CONTROLCODE
 
 LIB_OBJS = \
 	src/caption-closed-controls.o       \
@@ -18,11 +27,11 @@ LIB_OBJS = \
 	src/caption-superimpose.o           \
 	src/packet-pes.o
 
-%.o: %.c $(DEPS)
+%.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $< 
 
 all: $(LIB_OBJS)
-	$(CC) -shared -o libclosedcaption.so $(LIB_OBJS)
+	$(CC) -shared -o $(LIBNAME) $(LIB_OBJS)
 
 clean:
-	rm -f $(LIB_OBJS)
+	rm -f $(LIBNAME) $(LIB_OBJS)
