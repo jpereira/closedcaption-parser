@@ -14,14 +14,12 @@
  * Funcoes a serem utilizadas para registrar hooking para os
  * comandos recebidos C0/C1
  */
-void
-caption_hooking_set_controls (void (*callback)(CaptionClosed_t *, const uint8_t));
+void caption_hooking_set_controls(void (*callback)(CaptionClosed_t *, const uint8_t));
                                
 /**
  * Funcoes a serem utilizadas para registrar hooking para as strings recebidas.
  */
-void
-caption_hooking_set_string (void (*callback)(CaptionClosed_t *, const char *, const uint8_t));
+void caption_hooking_set_string(void (*callback)(CaptionClosed_t *, const char *, const uint8_t));
 
 #endif /*CAPTION_HOOKING_H_*/
 

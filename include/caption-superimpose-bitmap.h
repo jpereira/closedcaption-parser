@@ -28,8 +28,7 @@ typedef struct CaptionSuperImposeBitmap_t {
  * @param m Um pacote de dados valido do tipo CaptionManagement_t
  * @return Se 'm' for valido, retorna um CaptionSuperImposeBitmap_t, sua liberacao atraves de caption_superimpose_bitmap_free()
  */
-CaptionSuperImposeBitmap_t*
-caption_superimpose_bitmap_new (const CaptionManagement_t *m);
+CaptionSuperImposeBitmap_t *caption_superimpose_bitmap_new (const CaptionManagement_t *m);
 
 /**
  * Esta funcao tem por finalidade liberar o recurso alocado na criacao
@@ -40,8 +39,6 @@ caption_superimpose_bitmap_new (const CaptionManagement_t *m);
  * @param cc - Ponteiro do tipo CaptionSuperImposeBitmap_t
  * @return void
  */
-void
-caption_superimpose_bitmap_free (CaptionSuperImposeBitmap_t *cc);
+void caption_superimpose_bitmap_free (CaptionSuperImposeBitmap_t *cc);
 
 #endif /*CAPTION_SUPERIMPOSE_BITMAP_H_*/
-

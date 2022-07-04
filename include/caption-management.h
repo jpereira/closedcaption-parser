@@ -11,18 +11,18 @@
 #include "caption-data.h"
 #include "caption-common.h"
 
-#define MANAGEMENT_TMD_FREE                  0x00
-#define MANAGEMENT_TMD_REALTIME              0x01
-#define MANAGEMENT_TMD_OFFSET                0x10
-#define MANAGEMENT_TMD_RESERVED              0x11
+#define MANAGEMENT_TMD_FREE                0x00
+#define MANAGEMENT_TMD_REALTIME            0x01
+#define MANAGEMENT_TMD_OFFSET              0x10
+#define MANAGEMENT_TMD_RESERVED            0x11
 
 // Arib STD-B24, Tabela 9-8
-#define MANAGEMENT_TCS_8BIT                  0x00
-#define MANAGEMENT_TCS_UCS                   0x01
+#define MANAGEMENT_TCS_8BIT                0x00
+#define MANAGEMENT_TCS_UCS                 0x01
 
 // Arib STD-B24, Tabela 9-9
-#define MANAGEMENT_ROLL_NONE                 0x00 
-#define MANAGEMENT_ROLL_UP                   0x01
+#define MANAGEMENT_ROLL_NONE               0x00 
+#define MANAGEMENT_ROLL_UP                 0x01
 
 #define _CAPTION_HANDLER_STATEMENT_BODY    0x20
 #define _CAPTION_HANDLER_GEOMETRIC         0x28
@@ -74,12 +74,8 @@ typedef struct CaptionManagement_t {
   const PES_pts_t *pts; // apenas referencia.
 } CaptionManagement_t;
 
-bool
-caption_management_load (const CaptionData_t *caption,
-                         CaptionManagement_t *management);
+bool caption_management_load (const CaptionData_t *caption, CaptionManagement_t *management);
 
-CaptionManagementType_t
-caption_management_get_type (const CaptionManagement_t *management);
+CaptionManagementType_t caption_management_get_type (const CaptionManagement_t *management);
 
 #endif /* CAPTION_MANAGEMENT_H_*/
-

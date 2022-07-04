@@ -28,14 +28,8 @@ typedef struct CaptionData_t {
   const PES_pts_t *pts; /* Apenas aponta para o PTS do PacketPES_t::pts */
 } CaptionData_t;
 
-bool
-caption_data_check_crc16 (const uint8_t *data,
-                          const uint16_t *datalen,
-                          const uint16_t *crc16);
+bool caption_data_check_crc16 (const uint8_t *data, const uint16_t *datalen, const uint16_t *crc16);
 
-bool
-caption_data_load (const PacketPES_t *pes,
-                   CaptionData_t *caption);
+bool caption_data_load (const PacketPES_t *pes, CaptionData_t *caption);
 
 #endif /* CAPTION_DATA_H_*/
-

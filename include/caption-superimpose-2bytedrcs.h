@@ -28,8 +28,7 @@ typedef struct CaptionSuperImpose2ByteDrcs_t {
  * @param m Um pacote de dados valido do tipo CaptionManagement_t
  * @return Se 'm' for valido, retorna um CaptionSuperImpose2ByteDrcs_t, sua liberacao atraves de caption_superimpose_2bytedrcs_free()
  */
-CaptionSuperImpose2ByteDrcs_t*
-caption_superimpose_2bytedrcs_new (const CaptionManagement_t *m);
+CaptionSuperImpose2ByteDrcs_t *caption_superimpose_2bytedrcs_new (const CaptionManagement_t *m);
 
 /**
  * Esta funcao tem por finalidade liberar o recurso alocado na criacao
@@ -40,8 +39,6 @@ caption_superimpose_2bytedrcs_new (const CaptionManagement_t *m);
  * @param cc - Ponteiro do tipo CaptionSuperImpose2ByteDrcs_t
  * @return void
  */
-void
-caption_superimpose_2bytedrcs_free (CaptionSuperImpose2ByteDrcs_t *cc);
+void caption_superimpose_2bytedrcs_free (CaptionSuperImpose2ByteDrcs_t *cc);
 
 #endif /*CAPTION_SUPERIMPOSE_2BYTEDRCS_H_*/
-

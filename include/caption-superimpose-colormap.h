@@ -28,8 +28,7 @@ typedef struct CaptionSuperImposeColormap_t {
  * @param m Um pacote de dados valido do tipo CaptionManagement_t
  * @return Se 'm' for valido, retorna um CaptionSuperImposeColormap_t, sua liberacao atraves de caption_superimpose_colormap_free()
  */
-CaptionSuperImposeColormap_t*
-caption_superimpose_colormap_new (const CaptionManagement_t *m);
+CaptionSuperImposeColormap_t *caption_superimpose_colormap_new (const CaptionManagement_t *m);
 
 /**
  * Esta funcao tem por finalidade liberar o recurso alocado na criacao
@@ -40,8 +39,6 @@ caption_superimpose_colormap_new (const CaptionManagement_t *m);
  * @param cc - Ponteiro do tipo CaptionSuperImposeColormap_t
  * @return void
  */
-void
-caption_superimpose_colormap_free (CaptionSuperImposeColormap_t *cc);
+void caption_superimpose_colormap_free (CaptionSuperImposeColormap_t *cc);
 
 #endif /*CAPTION_SUPERIMPOSE_BITMAP_H_*/
-

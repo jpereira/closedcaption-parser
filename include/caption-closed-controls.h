@@ -317,8 +317,7 @@ struct csi_arg_Pn { /* Estrutura utilizada para facilitar o acesso aos */
  * tendo sempre o valor de 'n' - 1, ou seja. Quando você quiser o P2
  * voce ira acessar argv[1].
  */
-bool
-csi_arg_Pn_load (CC_ControlCodes_CallbackData_t *d);
+bool csi_arg_Pn_load (CC_ControlCodes_CallbackData_t *d);
 
 /**
  * Caso tenha percebido eu fiz esta otimizacao baseada na tabela de
@@ -333,20 +332,18 @@ enum CC_ControlCodes_TableJump_e {
 /**
  * Verifica se e um 'code' e um C0 ou C1.
  */
-bool
-caption_closed_controls_is_table (const uint8_t *byte,
-                                  enum CC_ControlCodes_TableJump_e *table);
+bool caption_closed_controls_is_table (const uint8_t *byte,
+                                       enum CC_ControlCodes_TableJump_e *table);
 
 /**
  * Faz o handler entre o 'code' e o callback especifico para processar tais
  * informacoes recebidas.
  */
-bool
-caption_closed_controls_load (enum CC_ControlCodes_TableJump_e table,
-                              const uint8_t *argv /* buffer*/,
-                              const uint8_t argc /* total */,
-                              uint8_t *pos /* Posicao atual em argv[]*/,
-                              CaptionClosed_t *caption /* Obj caption */);
+bool caption_closed_controls_load (enum CC_ControlCodes_TableJump_e table,
+                                   const uint8_t *argv /* buffer*/,
+                                   const uint8_t argc /* total */,
+                                   uint8_t *pos /* Posicao atual em argv[]*/,
+                                   CaptionClosed_t *caption /* Obj caption */);
 
 /**
  * Converte o indice recebido para RGB conforme tabela descrita.
@@ -371,30 +368,27 @@ typedef enum {
   SET_CMLA_t_eMax
 } CC_Color_CMLA_t;
 
-static inline bool
-caption_closed_controls_cmlat2rgb (CC_Color_CMLA_t index,
-                                   CC_Color_t *color)
+static inline bool caption_closed_controls_cmlat2rgb (CC_Color_CMLA_t index, CC_Color_t *color)
 {
-static 
-CC_Color_t palete_index[] = {
-/* <R>   <G>   <B>    <A> */
- { 0x00, 0x00, 0x00, 0xFF }, // SET_CMLA0_BLACK
- { 0xFE, 0x00, 0x00, 0xFF }, // SET_CMLA1_FULL_INTENSITY_RED
- { 0x00, 0xFE, 0x00, 0xFF }, // SET_CMLA2_FULL_INTENSITY_GREEN
- { 0xFE, 0xFE, 0x00, 0xFF }, // SET_CMLA3_FULL_INTENSITY_YELLOW
- { 0x00, 0x00, 0xFE, 0xFF }, // SET_CMLA4_FULL_INTENSITY_BLUE
- { 0xFE, 0x00, 0xFE, 0xFF }, // SET_CMLA5_FULL_INTENSITY_MAGNETA
- { 0x00, 0xFE, 0xFE, 0xFF }, // SET_CMLA6_FULL_INTENSITY_CYAN
- { 0xFE, 0xFE, 0xFE, 0xFF }, // SET_CMLA7_FULL_INTENSITY_WHITE
- { 0x00, 0x00, 0x00, 0x00 }, // SET_CMLA8_TRANSPARENT
- { 0x79, 0x00, 0x00, 0xFF }, // SET_CMLA9_HALF_INTENSITY_RED
- { 0x00, 0x7D, 0x00, 0xFF }, // SET_CMLA10_HALF_INTENSITY_GREEN
- { 0xFE, 0xFE, 0x79, 0xFF }, // SET_CMLA11_HALF_INTENSITY_YELLOW
- { 0x00, 0x00, 0x79, 0xFF }, // SET_CMLA12_HALF_INTENSITY_BLUE
- { 0x79, 0x00, 0x79, 0xFF }, // SET_CMLA13_HALF_INTENSITY_MAGNETA
- { 0x00, 0xFE, 0xFE, 0xFF }, // SET_CMLA14_HALF_INTENSITY_CYAN
- { 0x00, 0x00, 0x00, 0xFF }  // SET_CMLA15_HALF_INTENSITY_WHITE
-};
+  static CC_Color_t palete_index[] = {
+  /* <R>   <G>   <B>    <A> */
+   { 0x00, 0x00, 0x00, 0xFF }, // SET_CMLA0_BLACK
+   { 0xFE, 0x00, 0x00, 0xFF }, // SET_CMLA1_FULL_INTENSITY_RED
+   { 0x00, 0xFE, 0x00, 0xFF }, // SET_CMLA2_FULL_INTENSITY_GREEN
+   { 0xFE, 0xFE, 0x00, 0xFF }, // SET_CMLA3_FULL_INTENSITY_YELLOW
+   { 0x00, 0x00, 0xFE, 0xFF }, // SET_CMLA4_FULL_INTENSITY_BLUE
+   { 0xFE, 0x00, 0xFE, 0xFF }, // SET_CMLA5_FULL_INTENSITY_MAGNETA
+   { 0x00, 0xFE, 0xFE, 0xFF }, // SET_CMLA6_FULL_INTENSITY_CYAN
+   { 0xFE, 0xFE, 0xFE, 0xFF }, // SET_CMLA7_FULL_INTENSITY_WHITE
+   { 0x00, 0x00, 0x00, 0x00 }, // SET_CMLA8_TRANSPARENT
+   { 0x79, 0x00, 0x00, 0xFF }, // SET_CMLA9_HALF_INTENSITY_RED
+   { 0x00, 0x7D, 0x00, 0xFF }, // SET_CMLA10_HALF_INTENSITY_GREEN
+   { 0xFE, 0xFE, 0x79, 0xFF }, // SET_CMLA11_HALF_INTENSITY_YELLOW
+   { 0x00, 0x00, 0x79, 0xFF }, // SET_CMLA12_HALF_INTENSITY_BLUE
+   { 0x79, 0x00, 0x79, 0xFF }, // SET_CMLA13_HALF_INTENSITY_MAGNETA
+   { 0x00, 0xFE, 0xFE, 0xFF }, // SET_CMLA14_HALF_INTENSITY_CYAN
+   { 0x00, 0x00, 0x00, 0xFF }  // SET_CMLA15_HALF_INTENSITY_WHITE
+  };
 
   assert (color != NULL);
 
@@ -410,4 +404,3 @@ CC_Color_t palete_index[] = {
 }
 
 #endif /*CAPTION_CLOSED_CONTROLS_H_*/
-

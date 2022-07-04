@@ -28,7 +28,7 @@ caption_superimpose_new (const CaptionData_t *caption)
   obj->len = 0;
 
 #if 0
-  // TODO: Caso seja precise adicionar mais de um CC em um unico objeto
+  // TODO: Caso precise adicionar mais de um CC em um unico objeto
   // basta encadear em 'next' conforme exemplo abaixo.
   // Por Jorge Pereira.
   obj->next = (CaptionSuperImpose_t*)calloc(1, sizeof(CaptionSuperImpose_t));

@@ -28,8 +28,7 @@ typedef struct CaptionSuperImposeGeometric_t {
  * @param m Um pacote de dados valido do tipo CaptionManagement_t
  * @return Se 'm' for valido, retorna um CaptionSuperImposeGeometric_t, sua liberacao atraves de caption_superimpose_geometric_free()
  */
-CaptionSuperImposeGeometric_t*
-caption_superimpose_geometric_new (const CaptionManagement_t *m);
+CaptionSuperImposeGeometric_t* caption_superimpose_geometric_new (const CaptionManagement_t *m);
 
 /**
  * Esta funcao tem por finalidade liberar o recurso alocado na criacao
@@ -40,8 +39,6 @@ caption_superimpose_geometric_new (const CaptionManagement_t *m);
  * @param cc - Ponteiro do tipo CaptionSuperImposeGeometric_t
  * @return void
  */
-void
-caption_superimpose_geometric_free (CaptionSuperImposeGeometric_t *cc);
+void caption_superimpose_geometric_free (CaptionSuperImposeGeometric_t *cc);
 
 #endif /*CAPTION_SUPERIMPOSE_GEOMETRIC_H_*/
-

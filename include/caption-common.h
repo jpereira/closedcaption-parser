@@ -77,23 +77,21 @@
     helper_hexdump("TESTE", __FILE__, __FUNCTION__, __LINE__, #buff, #buffLen, (const char*)buff, buffLen)
 #endif
 
-void
-helper_hexdump (const char *platform,
-                const char *fileFull,
-                const char *func,
-                uint32_t fileLine,
-                const char *namebuff,
-                const char *namebufflen,
-                const char *buff,
-                size_t buffLen);
+void helper_hexdump (const char *platform,
+                     const char *fileFull,
+                     const char *func,
+                     uint32_t fileLine,
+                     const char *namebuff,
+                     const char *namebufflen,
+                     const char *buff,
+                     size_t buffLen);
                    
-void
-helper_print (const char *platform,
-              const char *fileFull,
-              const char *func,
-              uint32_t line,
-              const char *format,
-              ...);
+void helper_print (const char *platform,
+                    const char *fileFull,
+                    const char *func,
+                    uint32_t line,
+                    const char *format,
+                    ...);
 
 #else
 
@@ -107,10 +105,6 @@ helper_print (const char *platform,
 
 #endif /* DEBUG_CLOSEDCAPTION */
 
-char *
-string_convert (const char *from,
-                const char *to,
-                const char *text,
-                size_t len);
+char *string_convert (const char *from, const char *to, const char *text, size_t len);
 
 #endif /* CAPTION_HELPER_H_ */

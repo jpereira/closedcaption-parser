@@ -26,8 +26,7 @@ struct CaptionSuperImpose_s {
  * @param caption Um pacote de dados valido do tipo CaptionData_t
  * @return Se 'caption' for valido, retorna um CaptionSuperImpose_t, sua liberacao atraves de caption_superimpose_free()
  */
-CaptionSuperImpose_t*
-caption_superimpose_new (const CaptionData_t *caption);
+CaptionSuperImpose_t* caption_superimpose_new (const CaptionData_t *caption);
 
 /**
  * Esta funcao tem por finalidade liberar o recurso alocado na criacao
@@ -38,8 +37,7 @@ caption_superimpose_new (const CaptionData_t *caption);
  * @param cc - Ponteiro do tipo CaptionSuperImpose_t
  * @return void
  */
-void
-caption_superimpose_free (CaptionSuperImpose_t *csi);
+void caption_superimpose_free (CaptionSuperImpose_t *csi);
 
 #endif /*CAPTION_SUPERIMPOSE_H_*/
 

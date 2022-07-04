@@ -113,9 +113,6 @@ typedef struct {
  * @param m Um pacote de dados valido do tipo CaptionManagement_t
  * @return Se 'm' for valido, retorna um CaptionClosed_t, liberar atraves de caption_closed_free()
  */
-bool
-caption_closed_run (const CaptionManagement_t *m,
-                    CaptionClosed_t *cc);
+bool caption_closed_run (const CaptionManagement_t *m, CaptionClosed_t *cc);
 
 #endif /*CAPTION_CLOSED_H_*/
-

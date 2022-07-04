@@ -10,14 +10,9 @@
 #include "caption-common.h"
 #include "caption-closed.h"
 
-void
-caption_hooking_priv_run_controls (CaptionClosed_t *,
-                                   const uint8_t cmd);
+void caption_hooking_priv_run_controls (CaptionClosed_t *, const uint8_t cmd);
 
-void
-caption_hooking_priv_run_string (CaptionClosed_t *, 
-                                 const char *,
-                                 uint8_t *);
+void caption_hooking_priv_run_string (CaptionClosed_t *, const char *, uint8_t *);
 
 #endif /*CAPTION_HOOKING_PRIV_H_*/
 
