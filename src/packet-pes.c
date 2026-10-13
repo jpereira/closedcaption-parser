@@ -1,13 +1,11 @@
 /**
- * @file: packet-pes.c
- * @autor: Jorge Pereira <jpereiran@gmail.com>
- * @date: Thu Aug 12 13:49:21 BRT 2010
- * @desc: Mais informações em 'arquitetura-closedcaption.txt'
+ * @file packet-pes.c
+ * @author Jorge Pereira <jpereiran@gmail.com>
+ * @date Thu Aug 12 13:49:21 BRT 2010
+ * @brief Leitura do cabeçalho de um pacote PES de legenda.
  */
 #include "packet-pes.h"
 #include "caption.h"
-
-//#define DEBUG_PACKET_PES
 
 /**
  * Localiza o 'payload' (data_group) dentro do PES_data_packet, conforme
@@ -19,7 +17,7 @@ packet_pes_set_payload (const uint8_t *pack,
                         const size_t raw_len,
                         PacketPES_t *pes)
 {
-  size_t pos = 9 + pes->header.len; // posicao do 'PES_data_packet'
+  size_t pos = 9 + pes->header.len; // posição do 'PES_data_packet'
   size_t end = (size_t)pes->pack_len + 6;
 
   if (end > raw_len)
@@ -53,39 +51,41 @@ packet_pes_load (const uint8_t *pack_raw,
   assert (out != NULL);
   assert (pes != NULL);
 
-  if (raw_len < 9) // Tamanho minimo do header PES
+  if (raw_len < 9) // Tamanho mínimo do cabeçalho PES
     return FALSE;
-
-// TODO: Adicionar o esquema dentro de um for() utilizando PacketPES_t::next
 
   header = ((pack[0] << 16 | pack[1] << 8 | pack[2]) & 0xFFFFFF);
-  if (header != PACKET_PES_PREFIX) // ATSC A/90 sync/async streams. (CaptionClosed)
+  if (header != PACKET_PES_PREFIX) // packet_start_code_prefix (00 00 01)
     return FALSE;
-  
-  // Packet Start Header
+
+  // Início do pacote
   pes->stream_id = pack[3];
   pes->pack_len  = ((pack[4] << 8) | pack[5]);
 
-  // PES Packet header
+  // Cabeçalho opcional do PES
   pes->header.flags.raw = ((pack[6] << 8) | pack[7]);
   pes->header.len       = pack[8];
 
   pes->payload.data = NULL;
   pes->payload.len  = 0;
 
-  // +6 completando todo o buf.
-  ATV_DEBUG ("Parsing PES Packet, len=%d (0x%04x)", pes->pack_len+6, pes->pack_len+6);
-#if 0//DEBUG_PACKET_PES
-  ATV_HEXDUMP (pes_raw, raw_len);
-#endif
+  // +6: os bytes antes do PES_packet_length.
+  ATV_DEBUG ("Lendo o pacote PES, len=%d (0x%04x)", pes->pack_len+6, pes->pack_len+6);
 
-  if (pes->header.flags.bit.emulation && !pes->header.flags.bit.scrambling)
+  // O cabeçalho opcional começa com o marcador '10'; sem ele (ex: stream_id
+  // 0xBF, legendas assíncronas) ou com o PES embaralhado, não há como ler os dados.
+  if (pes->header.flags.bit.emulation != 0x02 || pes->header.flags.bit.scrambling != 0)
+  {
+    ATV_DEBUG ("PES sem cabeçalho opcional ou embaralhado, ignorando.");
+    return FALSE;
+  }
+
   {
     switch (pes->header.flags.bit.PTS_DTS_flag)
     {
       case PTS_is_FORBIDEN: /* Proibido */
       {
-        ATV_DEBUG("The PTS Extension is (PTS_is_FORBIDEN)");
+        ATV_DEBUG("PTS_DTS_flags com valor proibido (01).");
         return FALSE;
       }
       break;
@@ -93,19 +93,19 @@ packet_pes_load (const uint8_t *pack_raw,
       case PTS_is_BOTH: /* Tem informacoes PTS/DTS (Presentation/Decode Time Stamp) */
       case PTS_is_ONLY_PTS: /* apenas pacotes PTS (Presentation Time Stamp) */
       {
-        // O DTS (quando existir) vem logo apos o PTS e nao e utilizado,
-        // o inicio do payload e calculado a partir de 'header.len'.
+        // O DTS (quando existir) vem logo após o PTS e não é utilizado;
+        // o início do payload é calculado a partir de 'header.len'.
         if (raw_len < 14 || pes->header.len < 5)
           return FALSE;
 
-        if ((pack[9] & 0x20) != 0x20) /* e um PTS valido!? */
+        if ((pack[9] & 0x20) != 0x20) /* é um PTS válido? */
         {
-          ATV_DEBUG ("** Error: PTS Invalido, saindo...\n");
+          ATV_DEBUG ("PTS inválido, ignorando o pacote.");
           return FALSE;
         }
         else
         {
-          // PTS tem 33 bits, o bit mais significativo e descartado.
+          // O PTS tem 33 bits; o bit mais significativo é descartado.
           uint32_t pts = ((uint32_t)(pack[9] & 0x0E) << 29) | (pack[10] << 22) | ((pack[11] >> 1) << 15) | (pack[12] << 7) | (pack[13] >> 1);
 
           packet_pes_set_pts (&pts, &pes->pts);
@@ -128,20 +128,14 @@ packet_pes_load (const uint8_t *pack_raw,
       break;
 
       default:
-        ATV_DEBUG ("Invalid PTS? PTS_DTS_flag = %d (%#x) PES is NONE, ...",
+        ATV_DEBUG ("PTS_DTS_flags inválido: %d (%#x)",
           pes->header.flags.bit.PTS_DTS_flag, pes->header.flags.bit.PTS_DTS_flag);
         return FALSE;
     }
-
-    // TODO: Caso necessario, basta implementar os esquemas para ESCR_flag
-    /*
-    switch (pes->header.flags.bit.ESCR_flag) {
-    ...
-    }*/
   }
 
-#ifdef DEBUG_PACKET_PES // apenas para ajudar na depuracao
-  ATV_HEXDUMP (pack, pes->pack_len+6);
+#ifdef DEBUG_PACKET_PES // apenas para ajudar na depuração
+  ATV_HEXDUMP (pack, ((size_t)pes->pack_len + 6 < raw_len) ? (size_t)pes->pack_len + 6 : raw_len);
   ATV_DEBUG("\n"
             "<PacketPES_t>\n"
             "  stream_id = %#x\n"

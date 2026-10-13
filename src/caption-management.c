@@ -1,8 +1,8 @@
 /**
- * @file: caption-management.c
- * @autor: Jorge Pereira <jpereiran@gmail.com>
- * @date: Thu Aug 12 13:49:21 BRT 2010
- * @desc: Mais informações em 'arquitetura-closedcaption.txt'
+ * @file caption-management.c
+ * @author Jorge Pereira <jpereiran@gmail.com>
+ * @date Thu Aug 12 13:49:21 BRT 2010
+ * @brief Leitura do caption management data e do caption statement data.
  */
 #include "caption-management.h"
 
@@ -14,8 +14,8 @@ caption_management_load (const CaptionData_t *caption,
   const uint8_t *data = caption->data;
   const uint32_t len = caption->datalen;
   CaptionManagement_t *m = mgmt;
-  // group_id 0x00 (grupo A) ou 0x20 (grupo B) e "caption management data",
-  // os demais sao "caption statement data". (ARIB STD-B24, Pag 152, 9.2)
+  // group_id 0x00 (grupo A) ou 0x20 (grupo B) é o "caption management data";
+  // os demais são o "caption statement data" (ARIB STD-B24, Volume 3, 9.2).
   const bool is_management = ((caption->group_id & 0x0f) == 0);
   uint32_t pos = 0;
   uint32_t end = 0;
@@ -29,15 +29,15 @@ caption_management_load (const CaptionData_t *caption,
 
   memset (m, 0, sizeof (CaptionManagement_t));
 
-  m->pts = caption->pts; // Apenas referencia.
+  m->pts = caption->pts; // apenas referência
   
-  // Seguindo conforme norma ARIB STD-B24, Pag 153, Tabela 9.3.1
+  // ARIB STD-B24, Volume 3, 9.3.1 (management) e 9.3.2 (statement)
   m->TMD = ((data[pos] & 0xc0) >> 6); // 11000000b
   m->reserved = (data[pos] & 0x3f);   // 00111111b
   pos += 1;
 
   // OTM (management, TMD=10) ou STM (statement, TMD=01 ou 10):
-  // 36-bits (9 digitos BCD) + 4-bits reservados.
+  // 36 bits (9 dígitos BCD) + 4 bits reservados.
   if ((is_management && m->TMD == MANAGEMENT_TMD_OFFSET) ||
       (!is_management && (m->TMD == MANAGEMENT_TMD_REALTIME || m->TMD == MANAGEMENT_TMD_OFFSET)))
   {
@@ -57,7 +57,7 @@ caption_management_load (const CaptionData_t *caption,
     m->num_lang = data[pos];
     pos += 1;
 
-    // Apenas o primeiro idioma e armazenado em 'm', os demais sao ignorados.
+    // Apenas o primeiro idioma é armazenado em 'm'; os demais são ignorados.
     for (i = 0; i < m->num_lang; i++)
     {
       uint8_t lang_tag, DMF, DC = 0;
@@ -69,7 +69,7 @@ caption_management_load (const CaptionData_t *caption,
       DMF      = (data[pos] & 0x0f);      // 00001111b
       pos += 1;
 
-      if (DMF == 0x0c || DMF == 0x0d || DMF == 0x0e) // Padrao e 0x00
+      if (DMF == 0x0c || DMF == 0x0d || DMF == 0x0e) // O padrão é 0x00
       {
         if (pos + 1 > len)
           return FALSE;
@@ -97,11 +97,11 @@ caption_management_load (const CaptionData_t *caption,
       pos += 4;
     }
 
-    // As 'data units' do management nao sao tratadas.
+    // As data units do management não são tratadas.
     return TRUE;
   }
 
-  // (Caption Statement Data) ARIB STD-B24: Cap 9.3.2
+  // Caption statement data (ARIB STD-B24, Volume 3, 9.3.2)
   if (pos + 3 > len)
     return FALSE;
 
@@ -109,8 +109,8 @@ caption_management_load (const CaptionData_t *caption,
   pos += 3;
   end  = (pos + end > len) ? len : pos + end;
 
-  // Pode haver mais de uma 'data unit' (ex: DRCS antes do texto). Da preferencia
-  // ao 'statement body', senao fica com a primeira encontrada.
+  // Pode haver mais de uma data unit (ex: DRCS antes do texto). Dá preferência
+  // ao 'statement body'; se não houver, fica com a primeira encontrada.
   while (pos + 5 <= end)
   {
     uint8_t unit_sep   = data[pos];
