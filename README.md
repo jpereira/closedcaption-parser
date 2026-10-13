@@ -1,4 +1,4 @@
-# closedcaption-parser
+# libclosedcaption
 
 Biblioteca em C para extrair o closed caption (legenda oculta) do padrão ISDB-Tb/SBTVD
 (ARIB STD-B24 / ABNT NBR 15606-1) a partir dos pacotes PES de legenda de um MPEG-TS.
@@ -117,7 +117,20 @@ caption_screen_flush (screen);
 Quem já tem o próprio demux pode usar só o `caption_screen_push_pes()`, ou as
 funções de baixo nível com os hooks de `caption-hooking.h`. A documentação
 completa é gerada com `make docs` e publicada em
-<https://jpereira.github.io/closedcaption-parser/>.
+<https://jpereira.github.io/libclosedcaption/>.
+
+## Documentação
+
+Instale o Doxygen e o Graphviz e execute:
+
+```
+make docs
+```
+
+Abra `build/docs/html/index.html` para consultar o site localmente, com o guia de uso
+e a referência da API.
+
+O site fica em <https://jpereira.github.io/libclosedcaption/>.
 
 ## Testes
 

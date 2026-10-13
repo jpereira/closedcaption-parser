@@ -1,0 +1,56 @@
+# Publica a imagem (ghcr.io/jpereira/libclosedcaption) ao empurrar uma tag vX.Y.Z
+# ou manualmente informando uma tag existente.
+name: Container image
+
+on:
+  push:
+    tags: ["v[0-9]*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag (vX.Y.Z)
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: container-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - name: Build and test
+        env:
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          image="ghcr.io/${GITHUB_REPOSITORY,,}"
+          version="${RELEASE_TAG#v}"
+          docker build \
+            --label "org.opencontainers.image.source=https://github.com/$GITHUB_REPOSITORY" \
+            --label "org.opencontainers.image.version=$version" \
+            --label "org.opencontainers.image.revision=$(git rev-parse HEAD)" \
+            --tag "$image:$version" --tag "$image:latest" .
+          docker run --rm -v "$PWD/tests:/t:ro" "$image:$version" /t/sintetico-basico.ts 0x130 \
+            2>/dev/null | diff -u tests/sintetico-basico.expected -
+
+      - name: Publish version and latest tags
+        env:
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          image="ghcr.io/${GITHUB_REPOSITORY,,}"
+          printf '%s' "$REGISTRY_TOKEN" | docker login ghcr.io \
+            --username "$GITHUB_ACTOR" --password-stdin
+          trap 'docker logout ghcr.io' EXIT
+          docker push "$image:${RELEASE_TAG#v}"
+          docker push "$image:latest"

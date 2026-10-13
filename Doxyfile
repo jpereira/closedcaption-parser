@@ -3,7 +3,7 @@
 # Gere com "make docs"; o HTML fica em build/docs/html/index.html.
 # Apenas as opções diferentes do padrão estão aqui.
 
-PROJECT_NAME           = "closedcaption-parser"
+PROJECT_NAME           = "libclosedcaption"
 PROJECT_BRIEF          = "Extração de closed caption ISDB-Tb/SBTVD de arquivos MPEG-TS"
 OUTPUT_DIRECTORY       = build/docs
 OUTPUT_LANGUAGE        = Brazilian

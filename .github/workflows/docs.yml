@@ -1,5 +1,5 @@
 # Compila e testa a biblioteca no Linux e publica a documentação (Doxygen)
-# no GitHub Pages: https://jpereira.github.io/closedcaption-parser/
+# no GitHub Pages: https://jpereira.github.io/libclosedcaption/
 #
 # Para a publicação funcionar, em Settings > Pages do repositório escolha
 # "Source: GitHub Actions".
@@ -7,7 +7,7 @@ name: build-e-docs
 
 on:
   push:
-    branches: [master]
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
@@ -45,7 +45,7 @@ jobs:
 
   deploy:
     name: Publicar no GitHub Pages
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     needs: [build, docs]
     runs-on: ubuntu-latest
     permissions:
