@@ -76,7 +76,7 @@ funciona também com compiladores fora do Xcode, como o LLVM do Homebrew.
    [00:00:08.341] PRECISAMOS DE LEI PARA
    [00:00:09.309] ISSO, ELES JÁ PODEM FAZER
 
-   10 linha(s) de legenda extraida(s) do PID 0x03ed.
+   10 linha(s) de legenda extraída(s) do PID 0x03ed.
    ```
 
    O tempo é relativo à primeira legenda. As legendas são impressas no stdout e as
@@ -90,26 +90,42 @@ comum em capturas de ISDB-T).
 ```c
 #include "caption.h"
 
-static void on_string (CaptionClosed_t *cc, const char *utf8, const uint8_t len) { ... }
-static void on_controls (CaptionClosed_t *cc, const uint8_t cmd) { ... } // ex: CTRL_C0_APR, CTRL_C0_CS
-
-caption_hooking_set_string (on_string);
-caption_hooking_set_controls (on_controls);
-
-// Para cada PES completo do PID da legenda:
-PacketPES_t pes = { 0 };
-CaptionData_t data;
-CaptionManagement_t mgmt;
-CaptionClosed_t cc = { 0 }; // guarda o estado (cores, tamanho, posição) entre os PES
-
-if (packet_pes_load (buf, len, &pes) &&
-    caption_data_load (&pes, &data) &&
-    caption_management_load (&data, &mgmt) &&
-    caption_management_get_type (&mgmt) == CAPTION_HANDLER_TYPE_STATEMENT_BODY)
+static void on_line (const CaptionLine_t *line, void *userdata)
 {
-  caption_closed_run (&mgmt, &cc); // chama on_string/on_controls
+  printf ("[%u ms] %s\n", line->start_ms, line->text);
 }
+
+static void on_pes (const uint8_t *pes, size_t len, void *userdata)
+{
+  caption_screen_push_pes (userdata, pes, len);
+}
+
+TsReader_t *reader = ts_reader_open ("video.ts", NULL);
+TsDemux_t *demux = ts_demux_new ();
+CaptionScreen_t *screen = caption_screen_new (on_line, NULL);
+const uint8_t *packet;
+
+ts_demux_set_pes_callback (demux, 0x3ed, on_pes, screen);
+
+while ((packet = ts_reader_next (reader)) != NULL)
+  ts_demux_push (demux, packet);
+
+ts_demux_flush (demux);
+caption_screen_flush (screen);
 ```
+
+Quem já tem o próprio demux pode usar só o `caption_screen_push_pes()`, ou as
+funções de baixo nível com os hooks de `caption-hooking.h`. A documentação
+completa é gerada com `make docs` e publicada em
+<https://jpereira.github.io/closedcaption-parser/>.
+
+## Testes
+
+```
+make test
+```
+
+Compara a saída do exemplo com a amostra real e com os TS sintéticos de `tests/`.
 
 ## Limitações
 
