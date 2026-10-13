@@ -1,12 +1,11 @@
 /**
  * @file: caption-superimpose-2bytedrcs.c
- * @autor: Jorge Pereira <jorge.pereira@tqtvd.com>
+ * @autor: Jorge Pereira <jpereiran@gmail.com>
  * @date: Thu Aug 12 13:49:21 BRT 2010
  * @desc: Mais informações em 'arquitetura-closedcaption.txt'
  */
 #include "caption-superimpose-2bytedrcs.h"
 
-#define DEBUG_CAPTION_SUPERIMPOSE_2BYTEDRCS
 
 CaptionSuperImpose2ByteDrcs_t*
 caption_superimpose_2bytedrcs_new (const CaptionManagement_t *m)
@@ -21,6 +20,8 @@ caption_superimpose_2bytedrcs_new (const CaptionManagement_t *m)
   assert (m->pts != NULL);
 
   obj = (CaptionSuperImpose2ByteDrcs_t*)calloc (1, sizeof (CaptionSuperImpose2ByteDrcs_t));
+  if (obj == NULL)
+    return NULL;
 
 #ifdef DEBUG_CAPTION_SUPERIMPOSE_2BYTEDRCS
   ATV_HEXDUMP (m->statement.unit_data, m->statement.unit_size);
@@ -50,18 +51,14 @@ caption_superimpose_2bytedrcs_free (CaptionSuperImpose2ByteDrcs_t *cc)
 {
   CaptionSuperImpose2ByteDrcs_t *obj = cc;
 
-  for (; obj != NULL; obj = obj->next)
+  while (obj != NULL)
   {
-    if (obj->var1 != NULL)
-    {
-      free (obj->var1);
-    }
-    obj->var1 = NULL;
+    CaptionSuperImpose2ByteDrcs_t *next = obj->next;
 
-    if (obj != NULL)
-    {
-      free (obj);
-    }
+    free (obj->var1);
+    free (obj);
+
+    obj = next;
   }
 }
 

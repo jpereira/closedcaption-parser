@@ -1,12 +1,22 @@
 /**
- * @file: caption-common.c
- * @autor: Jorge Pereira <jorge.pereira@tqtvd.com>
- * @date: Thu Aug 12 13:49:21 BRT 2010
- * @desc: Mais informações em 'arquitetura-closedcaption.txt'
+ * @file caption-common.c
+ * @author Jorge Pereira <jpereiran@gmail.com>
+ * @date Thu Aug 12 13:49:21 BRT 2010
+ * @brief Funções de depuração (apenas com @c -DDEBUG_CLOSEDCAPTION).
  */
 #include "caption-common.h"
 
 #ifdef DEBUG_CLOSEDCAPTION
+
+/** Retorna apenas o nome do arquivo, sem o diretório. */
+static const char *
+file_basename (const char *path)
+{
+  const char *file = strrchr (path, '/');
+
+  return (file != NULL) ? (file + 1) : path;
+}
+
 void
 helper_print (const char *platform,
               const char *fileFull,
@@ -16,31 +26,17 @@ helper_print (const char *platform,
               ...)
 {
   va_list ap;
-  char *file;
 
-  file = (char*)strrchr (fileFull, '/');
-  file = (file != NULL) ? (file + 1) : (char*)fileFull;
   (void)platform;
 
-#if 0
-  struct timeval tv;
-  struct timezone tz;
+  printf ("** DUMP: %s:%u %s() ** ", file_basename (fileFull), line, func);
 
-  gettimeofday(&tv, &tz);
-
-  printf ("[%05ld.%03d] *** DUMP[%s]: %s:%u %s() ** ",
-      (long)tv.tv_sec, (int)(tv.tv_usec / 1000), platform, file, line, func);
-#else
-  printf ("** DUMP: %s:%u %s() ** ", file, line, func);
-#endif
-
-  fflush_unlocked(stdout);
-  va_start(ap, format);
+  va_start (ap, format);
   vprintf (format, ap);
-  fflush_unlocked(stdout);
-  va_end(ap);
+  va_end (ap);
+
   putchar ('\n');
-  fflush_unlocked(stdout);
+  fflush (stdout);
 }
 
 void
@@ -53,86 +49,37 @@ helper_hexdump (const char *platform,
                 const char *buff,
                 size_t buffLen)
 {
-  uint32_t line = 0;
-  uint32_t count = 1;
-  uint32_t pos = 0;
-  uint32_t i = 0;
+  size_t offset, i;
 
-  helper_print(platform, fileFull, func, fileLine,
-          "<hexdump begin %s %s=%d (%#x)>", namebuff, namebufflen, buffLen, buffLen);
+  helper_print (platform, fileFull, func, fileLine,
+                "<hexdump begin %s %s=%zu (%#zx)>", namebuff, namebufflen, buffLen, buffLen);
 
-  printf("%08x  ", line);
-
-  if (buffLen <= 8192)
+  // Formato: "00000000  xx xx xx xx xx xx xx xx  xx xx xx xx xx xx xx xx |................|"
+  for (offset = 0; buffLen <= 8192 && offset < buffLen; offset += 16)
   {
-      while (pos < buffLen)
-      {
-          printf ("%02x\x20", buff[pos++] & 0xff);
+    printf ("%08zx  ", offset);
 
-          if (count == 8)
-          {
-              putchar ('\x20');
-          }
-          else if (count==16)
-          {
-              uint32_t log;
-
-              printf("|");
-
-              if (pos >= 16)
-              {
-                  log = pos - 16;
-              }
-              else
-              {
-                  log = pos;
-              }
-
-              for( ;log < pos; log++)
-              {
-                  printf("%c", IS_PRINTABLE(buff[log]) ? buff[log] : '.');
-              }
-
-              puts("|");
-              printf("%08x\x20\x20",line += 16);
-
-              if (pos > (buffLen-16))
-              {
-                  i = pos;
-              }
-
-              count = 0;
-          }
-          count += 1;
-      }
-      if (buffLen != i)
-      {
-          for(;(pos-i) < 16; pos++)
-          {
-              printf("\x20\x20\x20");
-          }
-          printf("\x20|");
-
-          for(;i<buffLen;i++)
-          {
-              printf("%c", IS_PRINTABLE(buff[i]) ? buff[i] : '.');
-          }
-
-          puts("|");
-      }
-
-      if (buffLen != pos)
-      {
-          printf("%08x\n", line += --count);
-      }
+    for (i = 0; i < 16; i++)
+    {
+      if (offset + i < buffLen)
+        printf ("%02x ", buff[offset + i] & 0xff);
       else
-      {
-          putchar('\n');
-      }
+        printf ("   ");
+
+      if (i == 7)
+        putchar (' ');
+    }
+
+    putchar ('|');
+
+    for (i = 0; i < 16 && offset + i < buffLen; i++)
+      putchar (IS_PRINTABLE (buff[offset + i]) ? buff[offset + i] : '.');
+
+    puts ("|");
   }
 
-  helper_print(platform, fileFull, func, fileLine,
-          "</hexdump end %s %s=%d (%#x)>", namebuff, namebufflen, buffLen, buffLen);
-  fflush_unlocked(stdout);
+  helper_print (platform, fileFull, func, fileLine,
+                "</hexdump end %s %s=%zu (%#zx)>", namebuff, namebufflen, buffLen, buffLen);
 }
-#endif /*DEBUG_CLOSEDCAPTION*/
+
+#endif /* DEBUG_CLOSEDCAPTION */

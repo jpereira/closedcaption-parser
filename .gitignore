@@ -1,2 +1,5 @@
 *.so
 *.o
+*.d
+/example/example
+/build/

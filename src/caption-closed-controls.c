@@ -1,6 +1,6 @@
 /**
  * @file: caption-closed-controls.c
- * @autor: Jorge Pereira <jorge.pereira@tqtvd.com>
+ * @autor: Jorge Pereira <jpereiran@gmail.com>
  * @date: Thu Aug 12 13:49:21 BRT 2010
  * @desc: Mais informações em 'arquitetura-closedcaption.txt'
  */
@@ -40,7 +40,7 @@
  * Ate entao a unica forma de testar foi atraves de alguns 'dumps' feitos do sinal da
  * TV Globo, automaticamente apenas alguns comandos foram realmente testados.
  *
- * Atc, Jorge Pereira <jorge.pereira@totvs.com.br>
+ * Atc, Jorge Pereira <jpereiran@gmail.com>
  * Date: Fri Oct 15 18:06:58 BRT 2010
  */
 
@@ -89,6 +89,26 @@ const CaptionClosedControls_t callbacks_ctrls_c0[] = {
   CAPTION_CTRL_SET(CTRL_C0_US, callback_controls_c0_US),
 };
  
+/**
+ * Retorna TRUE se o comando atual tem pelo menos 'n' bytes de parametros no buffer.
+ */
+#define CTRL_HAS_PARAMS(d, n) ((uint32_t)(n) < (uint32_t)(d)->argc)
+
+/**
+ * Pula os 'n' bytes de parametros do comando atual, evitando que sejam tratados
+ * como texto quando o comando nao e suportado. Nunca passa do final do buffer.
+ *
+ * Retorna FALSE, para ser utilizado diretamente como retorno das callbacks.
+ */
+static bool
+ctrl_skip_params (const CC_ControlCodes_CallbackData_t *d,
+                  uint16_t n)
+{
+  *d->pos += CTRL_HAS_PARAMS (d, n) ? n : (d->argc - 1);
+
+  return FALSE;
+}
+
 /**
  * Callbacks relacionado aos determinados 'comandos' de controle C0
  */
@@ -157,9 +177,10 @@ bool callback_controls_c0_LS0 (const CC_ControlCodes_CallbackData_t UNUSED(*d))
 }
 
 // handler: PAPF(0x16): Parameterized Active Position forward
-bool callback_controls_c0_PAPF (const CC_ControlCodes_CallbackData_t UNUSED(*d))
+// syntax: [papf] [P1]
+bool callback_controls_c0_PAPF (const CC_ControlCodes_CallbackData_t *d)
 {
-  return FALSE; // Não deve ser utilizado com "ClosedCaption", apenas "SuperImpose".
+  return ctrl_skip_params (d, 1); // Não deve ser utilizado com "ClosedCaption", apenas "SuperImpose".
 }
 
 // handler: CAN(0x18): Cancel
@@ -169,15 +190,22 @@ bool callback_controls_c0_CAN (const CC_ControlCodes_CallbackData_t UNUSED(*d))
 }
 
 // handler: SS2(0x19): Shift Single 2
-bool callback_controls_c0_SS2 (const CC_ControlCodes_CallbackData_t UNUSED(*d))
+// syntax: [ss2] [char]
+bool callback_controls_c0_SS2 (const CC_ControlCodes_CallbackData_t *d)
 {
-  return FALSE; // Não deve ser utilizado com "ClosedCaption", apenas "SuperImpose".
+  return ctrl_skip_params (d, 1); // Não deve ser utilizado com "ClosedCaption", apenas "SuperImpose".
 }
 
 // handler: ESC(0x1b): Escape
-bool callback_controls_c0_ESC (const CC_ControlCodes_CallbackData_t UNUSED(*d))
+// syntax: [esc] [I1 ... In] [F], com I entre 0x20-0x2f (ISO/IEC 2022)
+bool callback_controls_c0_ESC (const CC_ControlCodes_CallbackData_t *d)
 {
-  return FALSE; // Não deve ser utilizado com "ClosedCaption", apenas "SuperImpose".
+  uint16_t n = 1;
+
+  while (CTRL_HAS_PARAMS (d, n) && d->argv[*d->pos + n] >= 0x20 && d->argv[*d->pos + n] <= 0x2f)
+    n++;
+
+  return ctrl_skip_params (d, n); // Não deve ser utilizado com "ClosedCaption", apenas "SuperImpose".
 }
 
 /**
@@ -199,10 +227,12 @@ callback_controls_c0_APS (const CC_ControlCodes_CallbackData_t *d)
 {
   const uint8_t *P = &d->argv[*d->pos];
 
+  if (!CTRL_HAS_PARAMS (d, 2))
+      return ctrl_skip_params (d, 2);
   if(!(P[1] >= 0x40 && P[1] <= 0x7f))
-      return FALSE;
+      return ctrl_skip_params (d, 2);
   if (!(P[2] >= 0x40 && P[2] <= 0x7f))
-      return FALSE;
+      return ctrl_skip_params (d, 2);
   
   d->caption->APS.first  = (P[1] & 0x3f);
   d->caption->APS.second = (P[2] & 0x3f);
@@ -229,80 +259,70 @@ callback_controls_c0_APS (const CC_ControlCodes_CallbackData_t *d)
  * http://www.fileformat.info/info/unicode/char/a.htm
  * </brief>
  *
- * Atc, Jorge Pereira <jorge.pereira@tqtvd.com>
+ * Atc, Jorge Pereira <jpereiran@gmail.com>
  * Data: Thu Oct  7 17:07:38 BRT 2010
  */
 struct ss3charmap_g3 {
-  char g3; /* Codigo descrito conforme norma ABNT NBR 15608-3:2008, Pag 5, Tabela 3 */
-  uint32_t utf8; /* Codigo UTF-8 em hex*/
-  uint8_t utf8len; /* Quantidade de bytes ocupado pelo caracter 'utf8' */
+  uint8_t g3; /* Codigo descrito conforme norma ABNT NBR 15608-3:2008, Pag 5, Tabela 3 */
+  const char *utf8; /* Caracter em UTF-8 */
 } ss3chars_g3[] = {
-  { 0x21, 0x00aa99e2, 3 }, // (♪) EIGHT NOTE
+  { 0x21, "\xe2\x99\xaa" }, // (♪) EIGHT NOTE
 
-  { 0x30, 0x0000a4c2, 2 }, // (¤) CURRENCY SIGN
-  { 0x31, 0x0000a6c2, 2 }, // (¦) BROKEN BAR
-  { 0x32, 0x0000a8c2, 2 }, // (¨) DIAERESIS
-  { 0x33, 0x0000b4c2, 2 }, // (´) ACUTE ACCENT
-  { 0x34, 0x0000b8c2, 2 }, // (¸) CEDILLA
-  { 0x35, 0x0000bcc2, 2 }, // (¼) VULGAR FRACTION ONE QUARTER
-  { 0x36, 0x0000bdc2, 2 }, // (½) VULGAR FRACTION ONE HALF
-  { 0x37, 0x0000bec2, 2 }, // (¾) VULGAR FRACTION THREE QUARTERS
+  { 0x30, "\xc2\xa4" }, // (¤) CURRENCY SIGN
+  { 0x31, "\xc2\xa6" }, // (¦) BROKEN BAR
+  { 0x32, "\xc2\xa8" }, // (¨) DIAERESIS
+  { 0x33, "\xc2\xb4" }, // (´) ACUTE ACCENT
+  { 0x34, "\xc2\xb8" }, // (¸) CEDILLA
+  { 0x35, "\xc2\xbc" }, // (¼) VULGAR FRACTION ONE QUARTER
+  { 0x36, "\xc2\xbd" }, // (½) VULGAR FRACTION ONE HALF
+  { 0x37, "\xc2\xbe" }, // (¾) VULGAR FRACTION THREE QUARTERS
 
-  { 0x40, 0x00a680e2, 3 }, // (…) HORIZONTAL ELLIPSIS
-  { 0x41, 0x008896e2, 3 }, // (█) FULL BLOCK
-  { 0x42, 0x009880e2, 3 }, // (‘) LEFT SINGLE QUOTATION MARK
-  { 0x43, 0x009980e2, 3 }, // (’) RIGHT SINGLE QUOTATION MARK
-  { 0x44, 0x009c80e2, 3 }, // (“) LEFT DOUBLE QUOTATION MARK
-  { 0x45, 0x009d80e2, 3 }, // (”) RIGHT DOUBLE QUOTATION MARK
-  { 0x46, 0x00a280e2, 3 }, // (•) BULLET
-  { 0x47, 0x00a284e2, 3 }, // (™) TRADE MARK SIGN
-  { 0x48, 0x009b85e2, 3 }, // (⅛) VULGAR FRACTION ONE EIGHTH
+  { 0x40, "\xe2\x80\xa6" }, // (…) HORIZONTAL ELLIPSIS
+  { 0x41, "\xe2\x96\x88" }, // (█) FULL BLOCK
+  { 0x42, "\xe2\x80\x98" }, // (‘) LEFT SINGLE QUOTATION MARK
+  { 0x43, "\xe2\x80\x99" }, // (’) RIGHT SINGLE QUOTATION MARK
+  { 0x44, "\xe2\x80\x9c" }, // (“) LEFT DOUBLE QUOTATION MARK
+  { 0x45, "\xe2\x80\x9d" }, // (”) RIGHT DOUBLE QUOTATION MARK
+  { 0x46, "\xe2\x80\xa2" }, // (•) BULLET
+  { 0x47, "\xe2\x84\xa2" }, // (™) TRADE MARK SIGN
+  { 0x48, "\xe2\x85\x9b" }, // (⅛) VULGAR FRACTION ONE EIGHTH
 
-  { 0x49, 0x009c85e2, 3 }, // (⅜) VULGAR FRACTION THREE EIGHTHS
-  { 0x4a, 0x009d85e2, 3 }, // (⅝) VULGAR FRACTION FIVE EIGHTHS
-  { 0x4b, 0x009e85e2, 3 }, // (⅞) VULGAR FRACTION SEVEN EIGHTHS
+  { 0x49, "\xe2\x85\x9c" }, // (⅜) VULGAR FRACTION THREE EIGHTHS
+  { 0x4a, "\xe2\x85\x9d" }, // (⅝) VULGAR FRACTION FIVE EIGHTHS
+  { 0x4b, "\xe2\x85\x9e" }, // (⅞) VULGAR FRACTION SEVEN EIGHTHS
 };
-static uint8_t ss3chars_g3_max = ARRAY_SIZE (ss3chars_g3);
 
 bool
 callback_controls_c0_SS3 (const CC_ControlCodes_CallbackData_t *d)
 {
   const uint8_t *argv = &d->argv[*d->pos];
   CaptionClosed_t *caption = d->caption;
+  uint8_t map = 0;
 
-  //assert ((argv + 1) != NULL);
+  if (!CTRL_HAS_PARAMS (d, 1))
+    return ctrl_skip_params (d, 1);
 
-  if ((argv + 1) != NULL)
+  // Como o vetor e pequeno, e raramente tais caracteres sao enviados. preferi simplificar com um for()
+  for (; map < ARRAY_SIZE (ss3chars_g3); map++)
   {
-    uint8_t map = 0;
+    const struct ss3charmap_g3 *m = &ss3chars_g3[map];
 
-    // Como o vetor e pequeno, e raramente tais caracteres sao enviados. preferi simplificar com um for()
-    for (; map < ss3chars_g3_max; map++)
+    if (argv[1] == m->g3)
     {
-      struct ss3charmap_g3 *m = &ss3chars_g3[map];
+      uint8_t len = strlen (m->utf8);
 
-      assert (m != NULL);
-
-      if (argv[1] == m->g3)
-      {
-        *d->pos += 1;
+      *d->pos += 1;
                 
-        caption_hooking_priv_run_string (caption, (char *)&m->utf8, &m->utf8len);
-        
-        return TRUE;
-      }
-    }
-
-    if (map == ss3chars_g3_max)
-    {
-      printf ("callback_controls_c0_SS3(): Ops! O char(0x%x) nao foi reconhecido.\n"
-                 " verifique ABNT NBR 15608-3:2008, Pag 5, Tabela 3\n", argv[1]);
-      //assert (FALSE);
+      caption_hooking_priv_run_string (caption, m->utf8, &len);
+      
+      return TRUE;
     }
   }
 
-  //assert (FALSE);
-  return FALSE;
+  ATV_DEBUG ("Ops! O char(0x%x) nao foi reconhecido."
+             " verifique ABNT NBR 15608-3:2008, Pag 5, Tabela 3", argv[1]);
+
+  return ctrl_skip_params (d, 1);
 }
 
 // handler: RS(0x1e): Data Separator
@@ -367,7 +387,7 @@ const CaptionClosedControls_t callbacks_ctrls_c1[] = {
   CAPTION_CTRL_SET(CTRL_C1_TIM, callback_controls_c1_TIM),
 
   // (0x9d/0x9f): Padding
-  CAPTION_CTRL_SET(CTRL_C1_PAD_0x9d, NULL), // Padding: Apenas para alinhamento da estrutura. 
+  CAPTION_CTRL_SET(CTRL_C1_PAD_0x9e, NULL), // Padding: Apenas para alinhamento da estrutura. 
   CAPTION_CTRL_SET(CTRL_C1_PAD_0x9f, NULL)  // Padding: Apenas para alinhamento da estrutura. 
 };
 
@@ -472,13 +492,15 @@ callback_controls_c1_NSZ (const CC_ControlCodes_CallbackData_t *d)
 // handler: (0x8b): Specification Size
 // syntax: [szx] [tamanho]
 bool
-callback_controls_c1_SZX (const CC_ControlCodes_CallbackData_t UNUSED(*d))
+callback_controls_c1_SZX (const CC_ControlCodes_CallbackData_t *d)
 {
   const uint8_t *argv = &d->argv[*d->pos];
   
-  assert (argv + 1 != NULL);
+  if (!CTRL_HAS_PARAMS (d, 1))
+    return ctrl_skip_params (d, 1);
   
   d->caption->char_size_custom = argv[1];
+  *d->pos += 1;
   
   return TRUE; // Não deve ser utilizado com "ClosedCaption", apenas "SuperImpose".
 }
@@ -490,15 +512,16 @@ callback_controls_c1_COL (const CC_ControlCodes_CallbackData_t *d)
 {
   const uint8_t *argv = &d->argv[*d->pos];
 
-   //assert (argv[1] != 0x20 || (argv[1] >= 0x48 && argv[1] <= 0x7f));
-   if (!(argv[1] != 0x20 || (argv[1] >= 0x48 && argv[1] <= 0x7f)))
-       return FALSE;
+   if (!CTRL_HAS_PARAMS (d, 1) || (argv[1] == 0x20 && !CTRL_HAS_PARAMS (d, 2)))
+     return ctrl_skip_params (d, 2);
 
-   if ((argv[1] < 0x48 && argv[1] > 0x7f) && (argv[1] != 0x20) && (argv[2] < 0x40 && argv[2] > 0x4f))
+   // argv[1] deve ser 0x20 (com argv[2] entre 0x40 e 0x4f) ou estar entre 0x48 e 0x7f.
+   if ((argv[1] != 0x20 && (argv[1] < 0x48 || argv[1] > 0x7f)) ||
+       (argv[1] == 0x20 && (argv[2] < 0x40 || argv[2] > 0x4f)))
    {
      ATV_DEBUG ("Oops! Problemas com valor da cor (0x%02x), talvez payload invalido.!",
                 argv[1]);
-     return FALSE;
+     return ctrl_skip_params (d, (argv[1] == 0x20) ? 2 : 1);
    }
    else
    {
@@ -560,45 +583,48 @@ callback_controls_c1_COL (const CC_ControlCodes_CallbackData_t *d)
 }
 
 bool
-callback_controls_c1_FLC (const CC_ControlCodes_CallbackData_t UNUSED(*d))
+callback_controls_c1_FLC (const CC_ControlCodes_CallbackData_t *d)
 {
-  return FALSE; // Não deve ser utilizado com "ClosedCaption", apenas "SuperImpose".
+  return ctrl_skip_params (d, 1); // Não deve ser utilizado com "ClosedCaption", apenas "SuperImpose".
+}
+
+// syntax: [cdc] [P1] ou [cdc] [0x20] [P1]
+bool
+callback_controls_c1_CDC (const CC_ControlCodes_CallbackData_t *d)
+{
+  bool two = CTRL_HAS_PARAMS (d, 1) && d->argv[*d->pos + 1] == 0x20;
+
+  return ctrl_skip_params (d, two ? 2 : 1); // Não deve ser utilizado com "ClosedCaption", apenas "SuperImpose".
 }
 
 bool
-callback_controls_c1_CDC (const CC_ControlCodes_CallbackData_t UNUSED(*d))
+callback_controls_c1_POL (const CC_ControlCodes_CallbackData_t *d)
 {
-  return FALSE; // Não deve ser utilizado com "ClosedCaption", apenas "SuperImpose".
+  return ctrl_skip_params (d, 1); // Não deve ser utilizado com "ClosedCaption", apenas "SuperImpose".
 }
 
 bool
-callback_controls_c1_POL (const CC_ControlCodes_CallbackData_t UNUSED(*d))
+callback_controls_c1_WMM (const CC_ControlCodes_CallbackData_t *d)
 {
-  return FALSE; // Não deve ser utilizado com "ClosedCaption", apenas "SuperImpose".
+  return ctrl_skip_params (d, 1); // Não deve ser utilizado com "ClosedCaption", apenas "SuperImpose".
 }
 
 bool
-callback_controls_c1_WMM (const CC_ControlCodes_CallbackData_t UNUSED(*d))
+callback_controls_c1_MAC (const CC_ControlCodes_CallbackData_t *d)
 {
-  return FALSE; // Não deve ser utilizado com "ClosedCaption", apenas "SuperImpose".
+  return ctrl_skip_params (d, 1); // Não deve ser utilizado com "ClosedCaption", apenas "SuperImpose".
 }
 
 bool
-callback_controls_c1_MAC (const CC_ControlCodes_CallbackData_t UNUSED(*d))
+callback_controls_c1_HLC (const CC_ControlCodes_CallbackData_t *d)
 {
-  return FALSE; // Não deve ser utilizado com "ClosedCaption", apenas "SuperImpose".
+  return ctrl_skip_params (d, 1); // Não deve ser utilizado com "ClosedCaption", apenas "SuperImpose".
 }
 
 bool
-callback_controls_c1_HLC (const CC_ControlCodes_CallbackData_t UNUSED(*d))
+callback_controls_c1_RPC (const CC_ControlCodes_CallbackData_t *d)
 {
-  return FALSE; // Não deve ser utilizado com "ClosedCaption", apenas "SuperImpose".
-}
-
-bool
-callback_controls_c1_RPC (const CC_ControlCodes_CallbackData_t UNUSED(*d))
-{
-  return FALSE; // Não deve ser utilizado com "ClosedCaption", apenas "SuperImpose".
+  return ctrl_skip_params (d, 1); // Não deve ser utilizado com "ClosedCaption", apenas "SuperImpose".
 }
 
 bool
@@ -613,10 +639,11 @@ callback_controls_c1_STL (const CC_ControlCodes_CallbackData_t UNUSED(*d))
   return FALSE; // Não deve ser utilizado com "ClosedCaption", apenas "SuperImpose".
 }
 
+// syntax: [time] [0x20] [P1]
 bool
-callback_controls_c1_TIM (const CC_ControlCodes_CallbackData_t UNUSED(*d))
+callback_controls_c1_TIM (const CC_ControlCodes_CallbackData_t *d)
 {
-  return FALSE; // Não deve ser utilizado com "ClosedCaption", apenas "SuperImpose".
+  return ctrl_skip_params (d, 2); // Não deve ser utilizado com "ClosedCaption", apenas "SuperImpose".
 }
 
 /**
@@ -628,7 +655,7 @@ bool
 csi_arg_Pn_load (CC_ControlCodes_CallbackData_t *d)
 {
   struct csi_arg_Pn *Pn = d->data;
-  uint8_t i = 0;
+  uint16_t i = 0;
   uint8_t buf_n = 0;
   char buf[CTRL_CSI_MAX_Pn_FIELDS] = { 0, };
   
@@ -640,27 +667,22 @@ csi_arg_Pn_load (CC_ControlCodes_CallbackData_t *d)
 //ATV_DEBUG ("Carregando parametros Pn");
 //ATV_HEXDUMP (d->argv, d->argc);
 
-  for (Pn->argc = 0, i = 0; i < d->argc; i++)
+  for (Pn->argc = 0, i = 0; i < d->argc && Pn->argc < CTRL_CSI_MAX_Pn_ARGS; i++)
   {
-    assert ((d->argv + i) != NULL);
-
     if ((d->argv[i] >= '0' && d->argv[i] <= '9') && buf_n < (CTRL_CSI_MAX_Pn_FIELDS - 1))
     {
-      assert (buf_n < (CTRL_CSI_MAX_Pn_FIELDS - 1)); /* overflow!? */
-
       buf[buf_n] = (char)d->argv[i];
       buf_n     += 1;
       buf[buf_n] = '\0';
     }
     
-    if ((buf_n > 0 /* algo em 'buf'? */ && d->argv[i] == CTRL_CSI_IB /* token? */)
-        || (i+1) == d->argc /* final do buf d->argv[]? */)
+    if (buf_n > 0 /* algo em 'buf'? */ &&
+        (d->argv[i] == CTRL_CSI_IB /* token? */ || (i+1) == d->argc /* final do buf d->argv[]? */))
     {
-      uint64_t v = strtoul (&buf[0], NULL, 0);
+      // Base 10: os parametros sao decimais, e podem ter zeros a esquerda (ex: "08").
+      unsigned long v = strtoul (&buf[0], NULL, 10);
 
-      assert (v <= UINT16_MAX);
-
-      Pn->argv[Pn->argc] = (v & 0xFFFF);
+      Pn->argv[Pn->argc] = (v > UINT16_MAX) ? UINT16_MAX : (uint16_t)v;
       Pn->argc += 1;
       buf_n = 0;
     }
@@ -709,7 +731,7 @@ bool
 callback_controls_c1_CSI_load (const CC_ControlCodes_CallbackData_t *d)
 {
   const uint8_t *argv = &d->argv[*d->pos];
-  uint8_t i = 0;
+  uint16_t i = 0;
   CaptionClosed_CtrlCode_t *current_code = (CaptionClosed_CtrlCode_t*)&d->current_code;
 
 //ATV_DEBUG("Processando um CSI");
@@ -731,7 +753,10 @@ callback_controls_c1_CSI_load (const CC_ControlCodes_CallbackData_t *d)
               (callback = callbacks_ctrls_c1_csi[cmd_indice].callback) == NULL)
       {
         ATV_DEBUG("Callback não encontrado para o code(0x%02x)", cmd);
-        break;
+
+        // Pula toda a sequencia, para nao ser tratada como texto.
+        *d->pos += i + 1;
+        return FALSE;
       }
       else
       {
@@ -742,7 +767,7 @@ callback_controls_c1_CSI_load (const CC_ControlCodes_CallbackData_t *d)
         CC_ControlCodes_CallbackData_t arg_subset = {
           .argv = &argv[1], // Pula o argv[0] referente ao CTRL_C1_CSI
           .argc = (i - 1),  // Remove o argv[total-1] referente ao CTRL_CSI_FB
-          .pos = 0,
+          .pos = NULL,
           .caption = d->caption,
           .data = &csi_pn,
           .current_code = 0
@@ -778,7 +803,8 @@ callback_controls_c1_CSI_load (const CC_ControlCodes_CallbackData_t *d)
     }
   }
 
-  return FALSE;
+  // Sequencia incompleta (sem o 'F'), descarta ate o final do buffer.
+  return ctrl_skip_params (d, d->argc);
 }
 
 /**
@@ -807,29 +833,26 @@ callback_controls_c1_CSI_swf (const CC_ControlCodes_CallbackData_t *d)
   {
     case 1: // Apenas P1, Então e o 'Format'
     {
-      assert (Pn->argc < CC_Format_t_eMax);
+      if (P[0] >= CC_Format_t_eMax)
+        return FALSE;
 
-      d->caption->format = P[0];
+      c->format = P[0];
     }
     break;
 
     case 2 ... 4: // P2 ... P4
     {
       // P1
-      assert (P[0] == CC_Format_HOR_960x540);
+      if (P[0] != CC_Format_HOR_960x540)
+        return FALSE;
       c->format = CC_Format_HOR_960x540;
 
       // P2
-      assert (P[1] == 0 || P[1] == 1 || P[2] == 3);
-      if (P[1] == 0 || P[1] == 1 || P[2] == 3)
+      if (P[1] == 0 || P[1] == 1 || P[1] == 3)
         c->char_size = P[1];
 
-      // P3
-      assert ((P+2) != NULL);
+      // P3 e P4 (zerados quando nao informados)
       c->char_number_in_oneline = P[2];
-
-      // P4
-      assert ((P+3) != NULL);
       c->char_line_number = P[3];
     }
     break;
@@ -841,7 +864,7 @@ callback_controls_c1_CSI_swf (const CC_ControlCodes_CallbackData_t *d)
       // este assert() para caso consiga um 'caption' com tal valor, favor
       // parar e estudar tais parametros.
       //
-      // Atc. Jorge Pereira <jose.jorge@totvs.com.br>
+      // Atc. Jorge Pereira <jpereiran@gmail.com>
 
       ATV_DEBUG("Ops, Qtd de parametros (%d) nao esperado. favor analizar a norma!",
               Pn->argc);
@@ -984,9 +1007,12 @@ callback_controls_c1_CSI_rcs (const CC_ControlCodes_CallbackData_t *d)
   struct csi_arg_Pn *Pn = d->data;
   uint16_t *P = Pn->argv;
 
+  if (P[0] >= CC_Rcs_t_eMax)
+    return FALSE;
+
   d->caption->RCS = P[0]; // P1
 
-  return (P[0] < CC_Rcs_t_eMax);
+  return TRUE;
 }
 
 bool
@@ -1017,8 +1043,8 @@ caption_closed_controls_is_table (const uint8_t *byte,
 bool
 caption_closed_controls_load (enum CC_ControlCodes_TableJump_e table,
                               const uint8_t *argv,
-                              const uint8_t argc,
-                              uint8_t *pos,
+                              const uint16_t argc,
+                              uint16_t *pos,
                               CaptionClosed_t *caption)
 {
   bool (*callback)(const CC_ControlCodes_CallbackData_t *) = NULL;
@@ -1091,37 +1117,18 @@ caption_closed_controls_load (enum CC_ControlCodes_TableJump_e table,
 const char *
 caption_closed_controls_get_name (const uint8_t code)
 {
-  const CaptionClosedControls_t *ctrl;
-  
-  if (code >= CTRL_C1_CSI_SWF && code <= CTRL_C1_CSI_RCS)
-  {
-    ctrl = &callbacks_ctrls_c1_csi[code - CTRL_C1_BKF];
-    if (ctrl != NULL)
-    {
-      ATV_DEBUG("Em busca por code=%#x", code);
-      return ctrl->code_name;
-    }
-  }
-  else
-  {    
-    ctrl = &callbacks_ctrls_c0[code - CC_CTRLCODE_SET_C0];
-    if (ctrl != NULL)
-    {
-      ATV_DEBUG("Em busca por code=%#x", code);
-      return ctrl->code_name;
-    }
+  // Os subsets do CSI (0x53 ~ 0x6e) colidem com os caracteres, entao sao
+  // consultados apenas quando o 'code' nao e um C0/C1.
+  if (code >= CC_CTRLCODE_SET_C0 && code < CC_CTRLCODE_SET_C0 + ARRAY_SIZE (callbacks_ctrls_c0))
+    return callbacks_ctrls_c0[code - CC_CTRLCODE_SET_C0].code_name;
 
-    ctrl = &callbacks_ctrls_c1[code - CC_CTRLCODE_SET_C1];
-    if (ctrl != NULL)
-    {
-      ATV_DEBUG("Em busca por code=%#x", code);
-      return ctrl->code_name;
-    }
-  }
-    
+  if (code >= CC_CTRLCODE_SET_C1 && code < CC_CTRLCODE_SET_C1 + ARRAY_SIZE (callbacks_ctrls_c1))
+    return callbacks_ctrls_c1[code - CC_CTRLCODE_SET_C1].code_name;
+
+  if (code >= CTRL_C1_CSI_SWF && code < CTRL_C1_CSI_SWF + ARRAY_SIZE (callbacks_ctrls_c1_csi))
+    return callbacks_ctrls_c1_csi[code - CTRL_C1_CSI_SWF].code_name;
+
   ATV_DEBUG("Code (0x%02x) nao encontrado", code);
-//assert (0);
 
   return "UNKNOWN";
 }
-

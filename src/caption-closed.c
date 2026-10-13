@@ -1,19 +1,14 @@
 /**
  * @file: caption-closed.c
- * @autor: Jorge Pereira <jorge.pereira@tqtvd.com>
+ * @autor: Jorge Pereira <jpereiran@gmail.com>
  * @date: Thu Aug 12 13:49:21 BRT 2010
  * @desc: Mais informações em 'arquitetura-closedcaption.txt'
  */
 
-//#define DEBUG_CLOSEDCAPTION
-#define DEBUG_CAPTION_CLOSED_CONTROLCODE
 #include "caption-closed.h"
 #include "caption-closed-controls.h"
 #include "caption-hooking-priv.h"
 #include "caption-common.h"
-//#define TQTVD_ENABLE_ATVDEBUG_LOG 1
-//#include "atvLog-priv.h"
-#include "atvLog-mute.h"
 
 #define CHAR_UTF8_BUFFER_LEN 8
 
@@ -58,8 +53,9 @@ caption_closed_run (const CaptionManagement_t *m,
   assert (m != NULL);
   assert (cc != NULL);
   const uint8_t *argv = m->statement.unit_data;
-  const uint8_t argc = m->statement.unit_size;
-  uint8_t pos = 0; // Posicao atual em argv[]
+  // O payload de um PES nunca passa de 64KB.
+  const uint16_t argc = (m->statement.unit_size > UINT16_MAX) ? UINT16_MAX : m->statement.unit_size;
+  uint16_t pos = 0; // Posicao atual em argv[]
   enum CC_ControlCodes_TableJump_e table = CC_CTRLCODE_SET_UNKNOWN;
 
 //  assert (m->pts != NULL);
@@ -106,12 +102,11 @@ caption_closed_run (const CaptionManagement_t *m,
     }
     else
     {
-      printf("CLOSED CAPTION: Unknown character found: (0x%02x) \n", argv[pos]);
-      return FALSE;
+      // Caracter fora do conjunto suportado, ignora e segue com o restante.
+      ATV_DEBUG("Unknown character found: (0x%02x)", argv[pos]);
     }
   }
 
   return TRUE;
 }
 
-//#undef TQTVD_ENABLE_ATVDEBUG_LOG

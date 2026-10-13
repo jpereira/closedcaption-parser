@@ -1,6 +1,6 @@
 /**
  * @file: caption-hooking.c
- * @autor: Jorge Pereira <jorge.pereira@tqtvd.com>
+ * @autor: Jorge Pereira <jpereiran@gmail.com>
  * @date: Thu Aug 12 13:49:21 BRT 2010
  * @desc: Mais informações em 'arquitetura-closedcaption.txt'
  */

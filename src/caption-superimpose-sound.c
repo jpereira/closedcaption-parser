@@ -1,12 +1,11 @@
 /**
  * @file: caption-superimpose-sound.c
- * @autor: Jorge Pereira <jorge.pereira@tqtvd.com>
+ * @autor: Jorge Pereira <jpereiran@gmail.com>
  * @date: Thu Aug 12 13:49:21 BRT 2010
  * @desc: Mais informações em 'arquitetura-closedcaption.txt'
  */
 #include "caption-superimpose-sound.h"
 
-#define DEBUG_CAPTION_SUPERIMPOSE_SOUND
 
 CaptionSuperImposeSound_t*
 caption_superimpose_sound_new (const CaptionManagement_t *m)
@@ -21,6 +20,8 @@ caption_superimpose_sound_new (const CaptionManagement_t *m)
   assert (m->pts != NULL);
 
   obj = (CaptionSuperImposeSound_t*)calloc (1, sizeof (CaptionSuperImposeSound_t));
+  if (obj == NULL)
+    return NULL;
 
 #ifdef DEBUG_CAPTION_SUPERIMPOSE_SOUND
   ATV_HEXDUMP (m->statement.unit_data, m->statement.unit_size);
@@ -50,18 +51,14 @@ caption_superimpose_sound_free (CaptionSuperImposeSound_t *cc)
 {
   CaptionSuperImposeSound_t *obj = cc;
 
-  for (; obj != NULL; obj = obj->next)
+  while (obj != NULL)
   {
-    if (obj->var1 != NULL)
-    {
-      free (obj->var1);
-    }
-    obj->var1 = NULL;
+    CaptionSuperImposeSound_t *next = obj->next;
 
-    if (obj != NULL)
-    {
-      free (obj);
-    }
+    free (obj->var1);
+    free (obj);
+
+    obj = next;
   }
 }
 

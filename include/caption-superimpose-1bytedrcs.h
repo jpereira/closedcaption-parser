@@ -1,8 +1,13 @@
 /**
- * @file: caption-superimpose-1bytedrcs.h
- * @autor: Jorge Pereira <jorge.pereira@tqtvd.com>
- * @date: Thu Aug 12 13:49:21 BRT 2010
- * @desc: Mais informações em 'arquitetura-closedcaption.txt'
+ * @file caption-superimpose-1bytedrcs.h
+ * @author Jorge Pereira <jpereiran@gmail.com>
+ * @date Thu Aug 12 13:49:21 BRT 2010
+ * @brief Data unit de DRCS de 1 byte (caracteres desenhados pela emissora). <b>Não implementado</b>.
+ *
+ * Esqueleto para o tratamento das data units do tipo
+ * @ref CAPTION_HANDLER_TYPE_1BYTE_DRCS. Por enquanto apenas aloca a estrutura, sem
+ * interpretar os dados (com @c -DDEBUG_CLOSEDCAPTION e
+ * @c -DDEBUG_CAPTION_SUPERIMPOSE_1BYTEDRCS, imprime o dump da data unit).
  */
 #ifndef CAPTION_SUPERIMPOSE_1BYTEDRCS_H_
 #define CAPTION_SUPERIMPOSE_1BYTEDRCS_H_
@@ -11,33 +16,32 @@
 #include "caption-data.h"
 #include "caption-management.h"
 
-typedef struct CaptionSuperImpose1ByteDrcs_t { 
-  char *var1;
-  uint8_t var2;
+/**
+ * Data unit de DRCS de 1 byte (caracteres desenhados pela emissora). Os campos @c var1 e @c var2 são provisórios.
+ */
+typedef struct CaptionSuperImpose1ByteDrcs_t {
+  char *var1;   /**< Provisório: liberado por caption_superimpose_1bytedrcs_free(). */
+  uint8_t var2; /**< Provisório. */
 
-  const PES_pts_t *pts; /* apenas referencia */
-  struct CaptionSuperImpose1ByteDrcs_t *next; /* Lista encadeada com todos 'CC' encontrados no pacote PES */
+  const PES_pts_t *pts; /**< Aponta para o PacketPES_t::pts; válido enquanto o PacketPES_t existir. */
+  struct CaptionSuperImpose1ByteDrcs_t *next; /**< Próximo item da lista, ou NULL. */
 } CaptionSuperImpose1ByteDrcs_t;
 
 /**
- * Utilizado na criacao do objeto CaptionSuperImpose1ByteDrcs_t utilizando como
- * fonte um objeto do tipo CaptionManagement_t previamente alocado.
+ * Cria a estrutura a partir de uma data unit de DRCS de 1 byte (caracteres desenhados pela emissora).
  *
- * ** DOCUMENTAR **
- *
- * @param m Um pacote de dados valido do tipo CaptionManagement_t
- * @return Se 'm' for valido, retorna um CaptionSuperImpose1ByteDrcs_t, sua liberacao atraves de caption_superimpose_1bytedrcs_free()
+ * @param m  Conteúdo lido por caption_management_load(), do tipo
+ *           @ref CAPTION_HANDLER_TYPE_1BYTE_DRCS, com data unit não vazia.
+ * @return A estrutura, ou NULL se faltar memória. Liberar com
+ *         caption_superimpose_1bytedrcs_free().
  */
 CaptionSuperImpose1ByteDrcs_t *caption_superimpose_1bytedrcs_new (const CaptionManagement_t *m);
 
 /**
- * Esta funcao tem por finalidade liberar o recurso alocado na criacao
- * do objeto CaptionSuperImpose1ByteDrcs_t.
- * Lembrando que este ponteiro utilizado deve ter sido previamente alocado
- * por 'caption_superimpose_1bytedrcs_free'
+ * Libera a estrutura criada por caption_superimpose_1bytedrcs_new(), incluindo
+ * todos os itens encadeados em @c next.
  *
- * @param cc - Ponteiro do tipo CaptionSuperImpose1ByteDrcs_t
- * @return void
+ * @param cc  A estrutura. Aceita NULL.
  */
 void caption_superimpose_1bytedrcs_free (CaptionSuperImpose1ByteDrcs_t *cc);
 

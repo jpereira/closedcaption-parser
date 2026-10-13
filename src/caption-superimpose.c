@@ -1,6 +1,6 @@
 /**
  * @file: caption-superimpose.c
- * @autor: Jorge Pereira <jorge.pereira@tqtvd.com>
+ * @autor: Jorge Pereira <jpereiran@gmail.com>
  * @date: Thu Aug 12 13:49:21 BRT 2010
  * @desc: Mais informações em 'arquitetura-closedcaption.txt'
  */
@@ -17,6 +17,9 @@ caption_superimpose_new (const CaptionData_t *caption)
   assert (caption->datalen > 0);
 
   obj = (CaptionSuperImpose_t*)calloc (1, sizeof (CaptionSuperImpose_t));
+  if (obj == NULL)
+    return NULL;
+
 #if 1
   ATV_HEXDUMP (caption->data, caption->datalen);
 #endif
@@ -46,18 +49,14 @@ caption_superimpose_free (CaptionSuperImpose_t *csi)
 {
   CaptionSuperImpose_t *obj = csi;
 
-  for (; obj != NULL; obj = obj->next)
+  while (obj != NULL)
   {
-    if (obj->text_utf8 != NULL)
-    {
-      free (obj->text_utf8);
-    }
-    obj->text_utf8 = NULL;
+    CaptionSuperImpose_t *next = obj->next;
 
-    if (obj)
-    {
-      free (obj);
-    }
+    free (obj->text_utf8);
+    free (obj);
+
+    obj = next;
   }
 }
 

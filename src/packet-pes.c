@@ -1,6 +1,6 @@
 /**
  * @file: packet-pes.c
- * @autor: Jorge Pereira <jorge.pereira@tqtvd.com>
+ * @autor: Jorge Pereira <jpereiran@gmail.com>
  * @date: Thu Aug 12 13:49:21 BRT 2010
  * @desc: Mais informações em 'arquitetura-closedcaption.txt'
  */
@@ -8,6 +8,37 @@
 #include "caption.h"
 
 //#define DEBUG_PACKET_PES
+
+/**
+ * Localiza o 'payload' (data_group) dentro do PES_data_packet, conforme
+ * ARIB STD-B24, Vol 3, Tabela 5-1:
+ *   [header PES][data_identifier][private_stream_id][PES_data_packet_header_length][...][data_group]
+ */
+static bool
+packet_pes_set_payload (const uint8_t *pack,
+                        const size_t raw_len,
+                        PacketPES_t *pes)
+{
+  size_t pos = 9 + pes->header.len; // posicao do 'PES_data_packet'
+  size_t end = (size_t)pes->pack_len + 6;
+
+  if (end > raw_len)
+    end = raw_len;
+
+  if (pos + 3 > end)
+    return FALSE;
+
+  pes->payload.header = (pack[pos] << 16) | (pack[pos+1] << 8) | pack[pos+2];
+  pos += 3 + (pack[pos+2] & 0x0f); // 3 bytes do header + PES_data_private_data_byte
+
+  if (pos >= end)
+    return FALSE;
+
+  pes->payload.data = &pack[pos];
+  pes->payload.len  = end - pos;
+
+  return TRUE;
+}
 
 bool
 packet_pes_load (const uint8_t *pack_raw,
@@ -20,8 +51,10 @@ packet_pes_load (const uint8_t *pack_raw,
   
   assert (pack_raw != NULL);
   assert (out != NULL);
-  assert (raw_len > 0);
   assert (pes != NULL);
+
+  if (raw_len < 9) // Tamanho minimo do header PES
+    return FALSE;
 
 // TODO: Adicionar o esquema dentro de um for() utilizando PacketPES_t::next
 
@@ -57,8 +90,14 @@ packet_pes_load (const uint8_t *pack_raw,
       }
       break;
 
+      case PTS_is_BOTH: /* Tem informacoes PTS/DTS (Presentation/Decode Time Stamp) */
       case PTS_is_ONLY_PTS: /* apenas pacotes PTS (Presentation Time Stamp) */
       {
+        // O DTS (quando existir) vem logo apos o PTS e nao e utilizado,
+        // o inicio do payload e calculado a partir de 'header.len'.
+        if (raw_len < 14 || pes->header.len < 5)
+          return FALSE;
+
         if ((pack[9] & 0x20) != 0x20) /* e um PTS valido!? */
         {
           ATV_DEBUG ("** Error: PTS Invalido, saindo...\n");
@@ -66,39 +105,28 @@ packet_pes_load (const uint8_t *pack_raw,
         }
         else
         {
-          uint32_t pts = ((pack[9] & 0x0E) << 29) | (pack[10] << 22) | ((pack[11] >> 1) << 15) | (pack[12] << 7) | (pack[13] >> 1);
-          uint8_t pos = 0x20; // posicao do 'payload'
+          // PTS tem 33 bits, o bit mais significativo e descartado.
+          uint32_t pts = ((uint32_t)(pack[9] & 0x0E) << 29) | (pack[10] << 22) | ((pack[11] >> 1) << 15) | (pack[12] << 7) | (pack[13] >> 1);
 
           packet_pes_set_pts (&pts, &pes->pts);
 
-          pes->payload.header = (pack[pos] << 16) | (pack[pos+1] << 8) | pack[pos+2];
-          pes->payload.data   = &pack[pos + 3];
-          pes->payload.len    = (pes->pack_len - pos) + 3; // 3 bytes relacionados ao header
+          if (!packet_pes_set_payload (pack, raw_len, pes))
+            return FALSE;
         }
       } 
       break;
 
-      case PTS_is_BOTH: /* Tem informacoes PTS/DTS (Presentation/Decode Time Stamp) */
+      case PTS_is_NONE: /* Nenhum */
       {
-        ATV_DEBUG("The PTS Extension is (PTS_is_BOTH)");
+        uint32_t pts = 0;
 
-        // TODO: Caso precise implementar, favor ler no livro "Data Broadcast
-        // pag 98, Tabela 3.12
+        packet_pes_set_pts (&pts, &pes->pts);
+
+        if (!packet_pes_set_payload (pack, raw_len, pes))
+          return FALSE;
       }
       break;
 
-      case PTS_is_NONE: /* Nenhum */
-    	  ATV_DEBUG("WORKAROUND for RedeTV! - handling PTS_is_NONE _ALMOST_ the same way as PTS_is_ONLY_PTS\n");
-       	  uint32_t pts = ((pack[9] & 0x0E) << 29) | (pack[10] << 22) | ((pack[11] >> 1) << 15) | (pack[12] << 7) | (pack[13] >> 1);
-       	  //uint8_t pos = 0x20; // posicao do 'payload'
-       	  uint8_t pos = 0x1B;
-
-       	  packet_pes_set_pts (&pts, &pes->pts);
-
-       	  pes->payload.header = (pack[pos] << 16) | (pack[pos+1] << 8) | pack[pos+2];
-       	  pes->payload.data   = &pack[pos + 3];
-       	  pes->payload.len    = (pes->pack_len - pos) + 3; // 3 bytes relacionados ao header
-       	  break;
       default:
         ATV_DEBUG ("Invalid PTS? PTS_DTS_flag = %d (%#x) PES is NONE, ...",
           pes->header.flags.bit.PTS_DTS_flag, pes->header.flags.bit.PTS_DTS_flag);
@@ -139,7 +167,7 @@ packet_pes_load (const uint8_t *pack_raw,
             "  };\n"
             "  struct payload {\n"
             "    header = %#x\n"
-            "    data   = %#x\n"
+            "    data   = %p\n"
             "    len    = %d (%#x)\n"
             "  };\n"
             "</PacketPES_t>",
