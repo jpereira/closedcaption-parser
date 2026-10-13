@@ -30,7 +30,7 @@ caption_hooking_priv_run_controls (CaptionClosed_t *caption,
   if (__priv_callback_controls != NULL)
     __priv_callback_controls (caption, cmd);
   else
-    ATV_DEBUG("Oops!! Nenhum hook de controles foi registrado.");
+    ATV_DEBUG("Nenhum hook de controles registrado.");
 }
 
 void
@@ -41,5 +41,5 @@ caption_hooking_priv_run_string (CaptionClosed_t *caption,
   if (__priv_callback_string != NULL)
     __priv_callback_string (caption, string, *len);
   else
-    ATV_DEBUG("Oops!! Nenhum hook de texto foi registrado.");
+    ATV_DEBUG("Nenhum hook de texto registrado.");
 }

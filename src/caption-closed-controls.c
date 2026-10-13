@@ -207,7 +207,7 @@ callback_controls_c0_APS (const CC_ControlCodes_CallbackData_t *d)
  */
 struct ss3charmap_g3 {
   uint8_t g3; /* Código do caractere no conjunto G3 (ABNT NBR 15608-3:2008, Tabela 3) */
-  const char *utf8; /* Caracter em UTF-8 */
+  const char *utf8; /* Caractere em UTF-8 */
 } ss3chars_g3[] = {
   { 0x21, "\xe2\x99\xaa" }, // (♪) EIGHT NOTE
 

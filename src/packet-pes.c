@@ -90,8 +90,8 @@ packet_pes_load (const uint8_t *pack_raw,
       }
       break;
 
-      case PTS_is_BOTH: /* Tem informacoes PTS/DTS (Presentation/Decode Time Stamp) */
-      case PTS_is_ONLY_PTS: /* apenas pacotes PTS (Presentation Time Stamp) */
+      case PTS_is_BOTH: /* PTS e DTS (Presentation/Decode Time Stamp) */
+      case PTS_is_ONLY_PTS: /* apenas PTS (Presentation Time Stamp) */
       {
         // O DTS (quando existir) vem logo após o PTS e não é utilizado;
         // o início do payload é calculado a partir de 'header.len'.
