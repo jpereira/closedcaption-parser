@@ -1,0 +1,59 @@
+# Compila e testa a biblioteca no Linux e publica a documentação (Doxygen)
+# no GitHub Pages: https://jpereira.github.io/closedcaption-parser/
+#
+# Para a publicação funcionar, em Settings > Pages do repositório escolha
+# "Source: GitHub Actions".
+name: build-e-docs
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Compilar e testar
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compilar
+        run: make all example
+
+      - name: Testar
+        run: make test
+
+  docs:
+    name: Gerar documentação
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar o Doxygen
+        run: sudo apt-get update && sudo apt-get install -y doxygen graphviz
+
+      - name: Gerar o HTML
+        run: make docs
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/docs/html
+
+  deploy:
+    name: Publicar no GitHub Pages
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
+    needs: [build, docs]
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

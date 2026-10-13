@@ -1,0 +1,43 @@
+# Configuração do Doxygen para a documentação da libclosedcaption.
+#
+# Gere com "make docs"; o HTML fica em build/docs/html/index.html.
+# Apenas as opções diferentes do padrão estão aqui.
+
+PROJECT_NAME           = "closedcaption-parser"
+PROJECT_BRIEF          = "Extração de closed caption ISDB-Tb/SBTVD de arquivos MPEG-TS"
+OUTPUT_DIRECTORY       = build/docs
+OUTPUT_LANGUAGE        = Brazilian
+INPUT_ENCODING         = UTF-8
+
+INPUT                  = README.md \
+                         include \
+                         example/main.c \
+                         docs/README.md \
+                         docs/REVISAO.md
+FILE_PATTERNS          = *.h *.c *.md
+USE_MDFILE_AS_MAINPAGE = README.md
+EXAMPLE_PATH           = example
+
+OPTIMIZE_OUTPUT_FOR_C  = YES
+TYPEDEF_HIDES_STRUCT   = NO
+SORT_MEMBER_DOCS       = NO
+SOURCE_BROWSER         = YES
+STRIP_FROM_PATH        = .
+
+# Documenta também as funções de depuração (ATV_DEBUG/ATV_HEXDUMP).
+ENABLE_PREPROCESSING   = YES
+PREDEFINED             = DEBUG_CLOSEDCAPTION
+
+# Parâmetro e retorno comuns a todas as callbacks de comandos de controle.
+ALIASES                = "ctrlcb=@param d Dados do comando (veja CC_ControlCodes_CallbackData_t). @return TRUE se o comando foi executado."
+
+WARN_IF_UNDOCUMENTED   = YES
+WARN_NO_PARAMDOC       = YES
+
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+GENERATE_TREEVIEW      = YES
+
+# Gráficos de dependências e estruturas (requer o Graphviz).
+HAVE_DOT               = YES
+HTML_COLORSTYLE        = LIGHT
