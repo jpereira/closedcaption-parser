@@ -2,7 +2,7 @@
  * @file caption-superimpose-sound.c
  * @author Jorge Pereira <jpereiran@gmail.com>
  * @date Thu Aug 12 13:49:21 BRT 2010
- * @brief Data unit de som sintetizado. Não implementado.
+ * @brief Data unit de som sintetizado (guarda os bytes, que seguem o ARIB STD-B5).
  */
 #include "caption-superimpose-sound.h"
 
@@ -15,20 +15,24 @@ caption_superimpose_sound_new (const CaptionManagement_t *m)
   assert (m->statement.unit_data != NULL);
   assert (m->statement.unit_size > 0);
 
-  obj = calloc (1, sizeof (CaptionSuperImposeSound_t));
-  if (obj == NULL)
-    return NULL;
-
 #ifdef DEBUG_CAPTION_SUPERIMPOSE_SOUND
   DTV_HEXDUMP (m->statement.unit_data, m->statement.unit_size);
 #endif
 
-  // TODO: interpretar a data unit (ARIB STD-B24, Volume 1, Capítulo 8).
-  // Caso uma data unit gere mais de um item, encadeie-os em 'next'.
-  obj->var1 = NULL;
-  obj->var2 = 1;
-  obj->pts  = m->pts; // apenas referência
-  obj->next = NULL;
+  obj = calloc (1, sizeof (CaptionSuperImposeSound_t));
+  if (obj == NULL)
+    return NULL;
+
+  obj->data = malloc (m->statement.unit_size);
+  if (obj->data == NULL)
+  {
+    free (obj);
+    return NULL;
+  }
+
+  memcpy (obj->data, m->statement.unit_data, m->statement.unit_size);
+  obj->len = m->statement.unit_size;
+  obj->pts = m->pts; // apenas referência
 
   return obj;
 }
@@ -42,7 +46,7 @@ caption_superimpose_sound_free (CaptionSuperImposeSound_t *cc)
   {
     CaptionSuperImposeSound_t *next = obj->next;
 
-    free (obj->var1);
+    free (obj->data);
     free (obj);
 
     obj = next;
