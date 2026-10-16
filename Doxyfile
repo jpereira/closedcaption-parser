@@ -4,9 +4,9 @@
 # Apenas as opções diferentes do padrão estão aqui.
 
 PROJECT_NAME           = "libclosedcaption"
-PROJECT_BRIEF          = "Extração de closed caption ISDB-Tb/SBTVD de arquivos MPEG-TS"
+PROJECT_BRIEF          = "ISDB-Tb/SBTVD (Brazilian DTV) closed caption extraction from MPEG-TS"
 OUTPUT_DIRECTORY       = build/docs
-OUTPUT_LANGUAGE        = Brazilian
+OUTPUT_LANGUAGE        = English
 INPUT_ENCODING         = UTF-8
 
 INPUT                  = README.md \
@@ -29,7 +29,7 @@ ENABLE_PREPROCESSING   = YES
 PREDEFINED             = DEBUG_CLOSEDCAPTION
 
 # Parâmetro e retorno comuns a todas as callbacks de comandos de controle.
-ALIASES                = "ctrlcb=@param d Dados do comando (veja CC_ControlCodes_CallbackData_t). @return TRUE se o comando foi executado."
+ALIASES                = "ctrlcb=@param d Command data (see CC_ControlCodes_CallbackData_t). @return TRUE if the command was executed."
 
 WARN_IF_UNDOCUMENTED   = YES
 WARN_NO_PARAMDOC       = YES

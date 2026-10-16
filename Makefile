@@ -134,6 +134,16 @@ fuzz:
 	clang $(CFLAGS) -O1 -g -fsanitize=fuzzer,address,undefined \
 	  -o build/fuzz-pes tests/fuzz/fuzz-pes.c $(LIB_OBJS:.o=.c) $(LDFLAGS)
 
+# As cópias pt_BR dos headers (só pra gerar a doc) não podem ficar diferentes do include/:
+# compara o código sem comentários.
+check-i18n:
+	@strip() { perl -0pe 's{/\*.*?\*/}{}gs; s{//[^\n]*}{}g; s{#define CLOSEDCAPTION_VERSION_(MAJOR|MINOR|PATCH) \d+}{}g; s{\s+}{ }g' "$$1"; }; \
+	for h in include/closedcaption/*.h example/main.c; do \
+	  c=docs/pt_BR/$${h#include/}; [ "$${h%%/*}" = example ] && c=docs/pt_BR/$$h; \
+	  [ "$$(strip $$h)" = "$$(strip $$c)" ] || { echo "diferente: $$h (cópia em $$c)"; exit 1; }; \
+	done; \
+	echo "OK: cópias pt_BR em dia."
+
 # Análise estática
 lint:
 	cppcheck --error-exitcode=1 --enable=warning,portability -q -I include/closedcaption src example
@@ -167,7 +177,10 @@ dist:
 # Documentação (Doxygen): build/docs/html/index.html
 docs:
 	mkdir -p build/docs
-	(cat Doxyfile; echo 'PROJECT_NUMBER = $(VERSION)') | doxygen -
+	(cat Doxyfile; echo 'PROJECT_NUMBER = $(VERSION)') > build/docs/Doxyfile.en
+	doxygen build/docs/Doxyfile.en
+	(cat Doxyfile Doxyfile.pt_BR; echo 'PROJECT_NUMBER = $(VERSION)') > build/docs/Doxyfile.pt_BR
+	doxygen build/docs/Doxyfile.pt_BR
 
 clean:
 	rm -f $(LIBNAME) $(STATICLIB) libclosedcaption.pc $(LIB_OBJS) $(LIB_OBJS:.o=.d) $(EXAMPLE) example/main.o example/main.d
@@ -175,4 +188,4 @@ clean:
 
 -include $(LIB_OBJS:.o=.d) example/main.d
 
-.PHONY: all example run-example test test-api test-sanitize fuzz lint install uninstall dist docs clean
+.PHONY: all example run-example test test-api test-sanitize fuzz lint check-i18n install uninstall dist docs clean

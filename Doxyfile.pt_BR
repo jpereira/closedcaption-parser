@@ -1,0 +1,15 @@
+# Docs em pt_BR: o Makefile concatena isto depois do Doxyfile, então só tem o que muda
+# (idioma, entradas e HTML em html/pt_BR). Entradas em docs/pt_BR (headers só com os comentários em pt_BR).
+
+PROJECT_BRIEF          = "Extração de closed caption ISDB-Tb/SBTVD de arquivos MPEG-TS"
+OUTPUT_LANGUAGE        = Brazilian
+HTML_OUTPUT            = html/pt_BR
+INPUT                  = README.pt_BR.md \
+                         docs/pt_BR/closedcaption \
+                         docs/pt_BR/example/main.c \
+                         docs/pt_BR/README.md \
+                         docs/pt_BR/REVISAO.md
+USE_MDFILE_AS_MAINPAGE = README.pt_BR.md
+EXAMPLE_PATH           = docs/pt_BR/example
+STRIP_FROM_PATH        = .
+ALIASES                = "ctrlcb=@param d Dados do comando (veja CC_ControlCodes_CallbackData_t). @return TRUE se o comando foi executado."
