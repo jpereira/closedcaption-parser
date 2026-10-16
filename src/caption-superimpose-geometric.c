@@ -20,7 +20,7 @@ caption_superimpose_geometric_new (const CaptionManagement_t *m)
     return NULL;
 
 #ifdef DEBUG_CAPTION_SUPERIMPOSE_GEOMETRIC
-  ATV_HEXDUMP (m->statement.unit_data, m->statement.unit_size);
+  DTV_HEXDUMP (m->statement.unit_data, m->statement.unit_size);
 #endif
 
   // TODO: interpretar a data unit (ARIB STD-B24, Volume 1, Capítulo 8).

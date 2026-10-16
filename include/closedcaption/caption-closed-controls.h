@@ -436,7 +436,7 @@ static inline bool caption_closed_controls_cmlat2rgb (CC_Color_CMLA_t index, CC_
 
   if ((unsigned)index >= ARRAY_SIZE(palete_index))
   {
-    ATV_DEBUG("Índice de cor (%d) fora da paleta.", index);
+    DTV_DEBUG("Índice de cor (%d) fora da paleta.", index);
     return FALSE;
   }
 

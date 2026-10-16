@@ -70,13 +70,13 @@ packet_pes_load (const uint8_t *pack_raw,
   pes->payload.len  = 0;
 
   // +6: os bytes antes do PES_packet_length.
-  ATV_DEBUG ("Lendo o pacote PES, len=%d (0x%04x)", pes->pack_len+6, pes->pack_len+6);
+  DTV_DEBUG ("Lendo o pacote PES, len=%d (0x%04x)", pes->pack_len+6, pes->pack_len+6);
 
   // O cabeçalho opcional começa com o marcador '10'; sem ele (ex: stream_id
   // 0xBF, legendas assíncronas) ou com o PES embaralhado, não há como ler os dados.
   if (pes->header.flags.bit.emulation != 0x02 || pes->header.flags.bit.scrambling != 0)
   {
-    ATV_DEBUG ("PES sem cabeçalho opcional ou embaralhado, ignorando.");
+    DTV_DEBUG ("PES sem cabeçalho opcional ou embaralhado, ignorando.");
     return FALSE;
   }
 
@@ -85,7 +85,7 @@ packet_pes_load (const uint8_t *pack_raw,
     {
       case PTS_is_FORBIDEN: /* Proibido */
       {
-        ATV_DEBUG("PTS_DTS_flags com valor proibido (01).");
+        DTV_DEBUG("PTS_DTS_flags com valor proibido (01).");
         return FALSE;
       }
       break;
@@ -100,7 +100,7 @@ packet_pes_load (const uint8_t *pack_raw,
 
         if ((pack[9] & 0x20) != 0x20) /* é um PTS válido? */
         {
-          ATV_DEBUG ("PTS inválido, ignorando o pacote.");
+          DTV_DEBUG ("PTS inválido, ignorando o pacote.");
           return FALSE;
         }
         else
@@ -128,15 +128,15 @@ packet_pes_load (const uint8_t *pack_raw,
       break;
 
       default:
-        ATV_DEBUG ("PTS_DTS_flags inválido: %d (%#x)",
+        DTV_DEBUG ("PTS_DTS_flags inválido: %d (%#x)",
           pes->header.flags.bit.PTS_DTS_flag, pes->header.flags.bit.PTS_DTS_flag);
         return FALSE;
     }
   }
 
 #ifdef DEBUG_PACKET_PES // apenas para ajudar na depuração
-  ATV_HEXDUMP (pack, ((size_t)pes->pack_len + 6 < raw_len) ? (size_t)pes->pack_len + 6 : raw_len);
-  ATV_DEBUG("\n"
+  DTV_HEXDUMP (pack, ((size_t)pes->pack_len + 6 < raw_len) ? (size_t)pes->pack_len + 6 : raw_len);
+  DTV_DEBUG("\n"
             "<PacketPES_t>\n"
             "  stream_id = %#x\n"
             "  pack_len  = %#x\n"

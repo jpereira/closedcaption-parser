@@ -20,7 +20,7 @@ caption_superimpose_new (const CaptionData_t *caption)
   if (obj == NULL)
     return NULL;
 
-  ATV_HEXDUMP (caption->data, caption->datalen);
+  DTV_HEXDUMP (caption->data, caption->datalen);
 
   // TODO: interpretar o superimpose (ARIB STD-B24, Volume 3, Capítulo 9).
   // Caso o data_group tenha mais de uma mensagem, encadeie-as em 'next'.

@@ -6,8 +6,8 @@
  *
  * <b>Depuração</b>
  *
- * Compilando com @c -DDEBUG_CLOSEDCAPTION, as macros @ref ATV_DEBUG e
- * @ref ATV_HEXDUMP passam a imprimir mensagens e dumps hexadecimais no
+ * Compilando com @c -DDEBUG_CLOSEDCAPTION, as macros @ref DTV_DEBUG e
+ * @ref DTV_HEXDUMP passam a imprimir mensagens e dumps hexadecimais no
  * stdout. Sem essa flag, elas não geram código.
  */
 #ifndef CAPTION_HELPER_H_
@@ -62,26 +62,26 @@
 /** Caractere ASCII visível (sem o espaço), usado no dump hexadecimal. */
 #define IS_PRINTABLE(a)     ((a) >= 33 && (a) <= 126)
 
-#ifndef ATV_DEBUG
+#ifndef DTV_DEBUG
 /**
  * Imprime uma mensagem de depuração, no formato do printf(), com o arquivo,
  * a linha e a função de origem. Só existe com @c -DDEBUG_CLOSEDCAPTION.
  */
-# define ATV_DEBUG(fmt, ...)   \
+# define DTV_DEBUG(fmt, ...)   \
     helper_print("DEBUG", __FILE__, __func__, __LINE__, fmt, ##__VA_ARGS__)
 #endif
 
-#ifndef ATV_HEXDUMP
+#ifndef DTV_HEXDUMP
 /**
  * Imprime o dump hexadecimal de um buffer. Só existe com
  * @c -DDEBUG_CLOSEDCAPTION.
  */
-# define ATV_HEXDUMP(buff, buffLen)\
+# define DTV_HEXDUMP(buff, buffLen)\
     helper_hexdump("DEBUG", __FILE__, __func__, __LINE__, #buff, #buffLen, (const char*)(buff), (buffLen))
 #endif
 
 /**
- * Imprime o dump hexadecimal de um buffer. Use a macro @ref ATV_HEXDUMP.
+ * Imprime o dump hexadecimal de um buffer. Use a macro @ref DTV_HEXDUMP.
  *
  * @param platform     Prefixo da mensagem (não utilizado).
  * @param fileFull     Arquivo de origem (@c __FILE__).
@@ -102,7 +102,7 @@ void helper_hexdump (const char *platform,
                      size_t buffLen);
 
 /**
- * Imprime uma mensagem de depuração. Use a macro @ref ATV_DEBUG.
+ * Imprime uma mensagem de depuração. Use a macro @ref DTV_DEBUG.
  *
  * @param platform  Prefixo da mensagem (não utilizado).
  * @param fileFull  Arquivo de origem (@c __FILE__).
@@ -119,12 +119,12 @@ void helper_print (const char *platform,
 
 #else
 
-# ifndef ATV_DEBUG
-#  define ATV_DEBUG(fmt, ...)         do { } while (0)
+# ifndef DTV_DEBUG
+#  define DTV_DEBUG(fmt, ...)         do { } while (0)
 # endif
 
-# ifndef ATV_HEXDUMP
-#  define ATV_HEXDUMP(buff, buffLen)  do { } while (0)
+# ifndef DTV_HEXDUMP
+#  define DTV_HEXDUMP(buff, buffLen)  do { } while (0)
 # endif
 
 #endif /* DEBUG_CLOSEDCAPTION */

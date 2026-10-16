@@ -72,7 +72,7 @@ caption_closed_run (const CaptionManagement_t *m,
 
   for (pos = 0; pos < argc; pos++)
   {
-    ATV_DEBUG("Processando argv[%d]=0x%02x", pos, argv[pos]);
+    DTV_DEBUG("Processando argv[%d]=0x%02x", pos, argv[pos]);
 
     // NUL e BEL podem ser incluídos ou removidos sem alterar o conteúdo
     // (ARIB TR-B14), então são ignorados.
@@ -81,7 +81,7 @@ caption_closed_run (const CaptionManagement_t *m,
 
     if (caption_closed_controls_is_table (&argv[pos], &table)) // Comando de controle?
     {
-      ATV_DEBUG("[CONTROLE] Processando ch(%c) hex(0x%02x) argv[%d]=0x%02x",
+      DTV_DEBUG("[CONTROLE] Processando ch(%c) hex(0x%02x) argv[%d]=0x%02x",
                 isprint(argv[pos])?argv[pos]:'?', argv[pos], pos, argv[pos]);
 
       // A callback avança 'pos' até o último parâmetro do comando.
@@ -91,7 +91,7 @@ caption_closed_run (const CaptionManagement_t *m,
     {
       uint8_t len = char_latin9_to_utf8 ((const char*)&argv[pos], &tmp[0], CHAR_UTF8_BUFFER_LEN);
 
-      ATV_DEBUG("[TEXTO] argv[%03d] ch(%c) hex(0x%02x) convertido para [%s] tam=%d",
+      DTV_DEBUG("[TEXTO] argv[%03d] ch(%c) hex(0x%02x) convertido para [%s] tam=%d",
                 pos, isprint(argv[pos])?argv[pos]:'?', argv[pos], &tmp[0], len);
 
       caption_hooking_priv_run_string (cc, &tmp[0], &len);
@@ -99,7 +99,7 @@ caption_closed_run (const CaptionManagement_t *m,
     else
     {
       // Caractere fora do conjunto suportado: ignora e segue com o restante.
-      ATV_DEBUG("Caractere desconhecido: (0x%02x)", argv[pos]);
+      DTV_DEBUG("Caractere desconhecido: (0x%02x)", argv[pos]);
     }
   }
 

@@ -34,7 +34,7 @@ CFLAGS += -isysroot $(SDKROOT)
 LDFLAGS += -isysroot $(SDKROOT) -L$(SDKROOT)/usr/lib
 endif
 
-# Depuração: DEBUG_CLOSEDCAPTION liga as mensagens (ATV_DEBUG/ATV_HEXDUMP) no
+# Depuração: DEBUG_CLOSEDCAPTION liga as mensagens (DTV_DEBUG/DTV_HEXDUMP) no
 # stdout. As demais flags adicionam dumps de cada módulo e só têm efeito junto
 # com ela.
 # CFLAGS += -DDEBUG_CLOSEDCAPTION

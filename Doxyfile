@@ -24,7 +24,7 @@ SORT_MEMBER_DOCS       = NO
 SOURCE_BROWSER         = YES
 STRIP_FROM_PATH        = .
 
-# Documenta também as funções de depuração (ATV_DEBUG/ATV_HEXDUMP).
+# Documenta também as funções de depuração (DTV_DEBUG/DTV_HEXDUMP).
 ENABLE_PREPROCESSING   = YES
 PREDEFINED             = DEBUG_CLOSEDCAPTION
 

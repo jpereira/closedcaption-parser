@@ -262,7 +262,7 @@ callback_controls_c0_SS3 (const CC_ControlCodes_CallbackData_t *d)
     }
   }
 
-  ATV_DEBUG ("Caractere G3 (0x%x) desconhecido; veja a ABNT NBR 15608-3:2008, Tabela 3.", argv[1]);
+  DTV_DEBUG ("Caractere G3 (0x%x) desconhecido; veja a ABNT NBR 15608-3:2008, Tabela 3.", argv[1]);
 
   return ctrl_skip_params (d, 1);
 }
@@ -459,7 +459,7 @@ callback_controls_c1_COL (const CC_ControlCodes_CallbackData_t *d)
    if ((argv[1] != 0x20 && (argv[1] < 0x48 || argv[1] > 0x7f)) ||
        (argv[1] == 0x20 && (argv[2] < 0x40 || argv[2] > 0x4f)))
    {
-     ATV_DEBUG ("Valor de cor (0x%02x) inválido no comando COL.", argv[1]);
+     DTV_DEBUG ("Valor de cor (0x%02x) inválido no comando COL.", argv[1]);
      return ctrl_skip_params (d, (argv[1] == 0x20) ? 2 : 1);
    }
    else
@@ -504,7 +504,7 @@ callback_controls_c1_COL (const CC_ControlCodes_CallbackData_t *d)
 
          default:
 
-           ATV_DEBUG ("Cor (0x%02x) inválida no comando COL.", cmla);
+           DTV_DEBUG ("Cor (0x%02x) inválida no comando COL.", cmla);
            return FALSE;
        }
 
@@ -677,7 +677,7 @@ callback_controls_c1_CSI_load (const CC_ControlCodes_CallbackData_t *d)
       if (cmd_indice >= CALLBACKS_CONTROLS_C1_CSI_LENGTH ||
               (callback = callbacks_ctrls_c1_csi[cmd_indice].callback) == NULL)
       {
-        ATV_DEBUG("Subcomando CSI (0x%02x) não suportado.", cmd);
+        DTV_DEBUG("Subcomando CSI (0x%02x) não suportado.", cmd);
 
         // Pula toda a sequência, para não ser tratada como texto.
         *d->pos += i + 1;
@@ -699,12 +699,12 @@ callback_controls_c1_CSI_load (const CC_ControlCodes_CallbackData_t *d)
         };
         bool ret = FALSE;
 
-        ATV_DEBUG("  [+] Processando o subcomando CSI::%s hex(0x%02x)",
+        DTV_DEBUG("  [+] Processando o subcomando CSI::%s hex(0x%02x)",
             callbacks_ctrls_c1_csi[cmd_indice].code_name, cmd);
 
         if (!csi_arg_Pn_load (&arg_subset))
         {
-          ATV_DEBUG("  [!!] CSI::%s hex(0x%02x) sem parâmetros.",
+          DTV_DEBUG("  [!!] CSI::%s hex(0x%02x) sem parâmetros.",
               callbacks_ctrls_c1_csi[cmd_indice].code_name, cmd);
         }
 
@@ -715,9 +715,9 @@ callback_controls_c1_CSI_load (const CC_ControlCodes_CallbackData_t *d)
         ret = callback (&arg_subset);
         if (!ret)
         {
-          ATV_DEBUG("Falha ao processar CSI::%s hex(0x%02x)",
+          DTV_DEBUG("Falha ao processar CSI::%s hex(0x%02x)",
               callbacks_ctrls_c1_csi[cmd_indice].code_name, cmd);
-          ATV_HEXDUMP (arg_subset.argv, arg_subset.argc);
+          DTV_HEXDUMP (arg_subset.argv, arg_subset.argc);
         }
 
         *current_code = cmd; // o hook recebe o código do subcomando
@@ -777,7 +777,7 @@ callback_controls_c1_CSI_swf (const CC_ControlCodes_CallbackData_t *d)
     {
       // TODO: a norma é pouco clara para outras quantidades de parâmetros e não
       // há amostras de legenda com esse caso.
-      ATV_DEBUG("Quantidade de parâmetros (%d) não esperada no CSI SWF.", Pn->argc);
+      DTV_DEBUG("Quantidade de parâmetros (%d) não esperada no CSI SWF.", Pn->argc);
       return FALSE;
     }
   }
@@ -974,16 +974,16 @@ caption_closed_controls_load (enum CC_ControlCodes_TableJump_e table,
 
     if (!ret)
     {
-      ATV_DEBUG("[-] O Callback '%s'(0x%02x) retornou %s",
+      DTV_DEBUG("[-] O Callback '%s'(0x%02x) retornou %s",
        caption_closed_controls_get_name (code), code, PRINT_BOOL(ret));
-      ATV_DEBUG ("Comando inválido ou não suportado:");
-      ATV_HEXDUMP (&d.argv[*pos], d.argc);
+      DTV_DEBUG ("Comando inválido ou não suportado:");
+      DTV_HEXDUMP (&d.argv[*pos], d.argc);
     }
 
     return ret;
   }
 
-  ATV_DEBUG("Não existe callback para (%s) (0x%02x) (tabela 0x%02x)",
+  DTV_DEBUG("Não existe callback para (%s) (0x%02x) (tabela 0x%02x)",
       caption_closed_controls_get_name (code), code, table);
 
   return FALSE;
@@ -1004,7 +1004,7 @@ caption_closed_controls_get_name (const uint8_t code)
   if (code >= CTRL_C1_CSI_SWF && code < CTRL_C1_CSI_SWF + ARRAY_SIZE (callbacks_ctrls_c1_csi))
     return callbacks_ctrls_c1_csi[code - CTRL_C1_CSI_SWF].code_name;
 
-  ATV_DEBUG("Código (0x%02x) não encontrado.", code);
+  DTV_DEBUG("Código (0x%02x) não encontrado.", code);
 
   return "UNKNOWN";
 }

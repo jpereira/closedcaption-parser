@@ -69,7 +69,7 @@ caption_data_load (const PacketPES_t *pes,
   // CRC-16 deve ser lido logo após os dados, e não no final do payload.
   if ((uint32_t)caption->datalen + 7 > len)
   {
-    ATV_DEBUG ("data_group_size (%d) maior que o payload (%d), ignorando.", caption->datalen, len);
+    DTV_DEBUG ("data_group_size (%d) maior que o payload (%d), ignorando.", caption->datalen, len);
     return FALSE;
   }
 
@@ -79,8 +79,8 @@ caption_data_load (const PacketPES_t *pes,
   caption->pts = &pes->pts; // apenas referência
 
 #ifdef DEBUG_CAPTION_DATA
-  ATV_HEXDUMP (pes->payload.data, pes->payload.len);
-  ATV_DEBUG ("\n"
+  DTV_HEXDUMP (pes->payload.data, pes->payload.len);
+  DTV_DEBUG ("\n"
      "<CaptionData_t>\n"
      " caption {\n"
      "  group_id = %d,\n"
@@ -96,13 +96,13 @@ caption_data_load (const PacketPES_t *pes,
      caption->datalen, caption->datalen, (caption->datalen > 0) ? caption->data[0] : 0,
      caption->crc16, caption->crc16
   );
-  ATV_HEXDUMP (caption->data, caption->datalen);
+  DTV_HEXDUMP (caption->data, caption->datalen);
 #endif
 
   // CRC-16 válido?
   if (!caption_data_check_crc16 (data, &group_len, &caption->crc16))
   {
-    ATV_DEBUG ("CRC-16 (%#x) não confere, ignorando.", caption->crc16);
+    DTV_DEBUG ("CRC-16 (%#x) não confere, ignorando.", caption->crc16);
     return FALSE;
   }
 
