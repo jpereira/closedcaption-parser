@@ -19,7 +19,7 @@ jobs:
     name: Compilar e testar
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Compilar
         run: make all example
@@ -31,7 +31,7 @@ jobs:
     name: Gerar documentação
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Instalar o Doxygen
         run: sudo apt-get update && sudo apt-get install -y doxygen graphviz
