@@ -12,6 +12,23 @@
 
 #include "caption-common.h"
 #include "caption-closed.h"
+#include "caption-hooking.h"
+
+/**
+ * Gets the hook of the control commands that is registered now (or NULL), to be able to
+ * restore it after a temporary caption_hooking_set_controls().
+ *
+ * @return The hook, or NULL.
+ */
+CaptionHookingControls_t caption_hooking_priv_get_controls (void);
+
+/**
+ * Gets the text hook that is registered now (or NULL), to be able to restore it after a
+ * temporary caption_hooking_set_string().
+ *
+ * @return The hook, or NULL.
+ */
+CaptionHookingString_t caption_hooking_priv_get_string (void);
 
 /**
  * Calls the controls hook, if there is one registered.

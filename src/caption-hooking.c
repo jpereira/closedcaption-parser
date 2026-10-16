@@ -23,6 +23,18 @@ caption_hooking_set_string (CaptionHookingString_t callback)
   __priv_callback_string = callback;
 }
 
+CaptionHookingControls_t
+caption_hooking_priv_get_controls (void)
+{
+  return __priv_callback_controls;
+}
+
+CaptionHookingString_t
+caption_hooking_priv_get_string (void)
+{
+  return __priv_callback_string;
+}
+
 void
 caption_hooking_priv_run_controls (CaptionClosed_t *caption,
                                    const uint8_t cmd)
