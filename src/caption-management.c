@@ -6,9 +6,11 @@
  */
 #include "caption-management.h"
 
-bool
-caption_management_load (const CaptionData_t *caption,
-                         CaptionManagement_t *mgmt)
+// 'want' < 0: pega a data unit preferida (ver abaixo); senão, a de índice 'want'.
+static bool
+management_load (const CaptionData_t *caption,
+                 CaptionManagement_t *mgmt,
+                 int want)
 {
   assert (caption != NULL);
   const uint8_t *data = caption->data;
@@ -20,6 +22,7 @@ caption_management_load (const CaptionData_t *caption,
   uint32_t pos = 0;
   uint32_t end = 0;
   uint8_t i;
+  int idx = 0;
 
   assert (m != NULL);
 
@@ -98,7 +101,7 @@ caption_management_load (const CaptionData_t *caption,
     }
 
     // As data units do management não são tratadas.
-    return TRUE;
+    return (want < 0);
   }
 
   // Caption statement data (ARIB STD-B24, Volume 3, 9.3.2)
@@ -125,9 +128,10 @@ caption_management_load (const CaptionData_t *caption,
     if (unit_size > end - pos)
       unit_size = end - pos;
 
-    if (m->statement.unit_sep == 0 ||
-        (unit_param == _CAPTION_HANDLER_STATEMENT_BODY &&
-         m->statement.unit_param != _CAPTION_HANDLER_STATEMENT_BODY))
+    if (want >= 0 ? idx == want :
+        (m->statement.unit_sep == 0 ||
+         (unit_param == _CAPTION_HANDLER_STATEMENT_BODY &&
+          m->statement.unit_param != _CAPTION_HANDLER_STATEMENT_BODY)))
     {
       m->statement.unit_sep   = unit_sep;
       m->statement.unit_param = unit_param;
@@ -136,9 +140,32 @@ caption_management_load (const CaptionData_t *caption,
     }
 
     pos += unit_size;
+    idx++;
   }
 
+  // Pediu uma data unit que não existe.
+  if (want >= 0 && m->statement.unit_sep == 0)
+    return FALSE;
+
   return TRUE;
+}
+
+bool
+caption_management_load (const CaptionData_t *caption,
+                         CaptionManagement_t *mgmt)
+{
+  return management_load (caption, mgmt, -1);
+}
+
+bool
+caption_management_load_unit (const CaptionData_t *caption,
+                              unsigned index,
+                              CaptionManagement_t *mgmt)
+{
+  if (index > INT16_MAX)
+    return FALSE;
+
+  return management_load (caption, mgmt, (int)index);
 }
 
 CaptionManagementType_t

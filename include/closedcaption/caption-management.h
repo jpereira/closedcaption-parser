@@ -135,6 +135,21 @@ bool caption_management_load (const CaptionData_t *caption,
                               CaptionManagement_t *management);
 
 /**
+ * Same as caption_management_load(), but picks the data unit number @p index (0 is the
+ * first one) of a caption statement data, instead of the preferred one. Use it to walk
+ * through all the data units (text, DRCS, bitmap...) of the same data group.
+ *
+ * @param caption  Data group read by caption_data_load().
+ * @param index    Position of the data unit in the data unit loop.
+ * @param mgmt     Receives the content, with the chosen data unit in @c statement.
+ * @return TRUE on success, FALSE if the data is invalid, it is a caption management
+ *         data or there is no data unit at @p index.
+ */
+bool caption_management_load_unit (const CaptionData_t *caption,
+                                   unsigned index,
+                                   CaptionManagement_t *mgmt);
+
+/**
  * Tells the type of content read by caption_management_load().
  *
  * @param management  Content read by caption_management_load().
