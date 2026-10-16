@@ -90,6 +90,10 @@ run-example: $(EXAMPLE)
 	@echo
 	./$(EXAMPLE) $(SAMPLE_TS) $(SAMPLE_PID)
 
+# Mostra também as data units de DRCS, bitmap, geométrico, som e superimpose (TS sintético).
+run-example-units: $(EXAMPLE)
+	./$(EXAMPLE) tests/sintetico-unidades.ts 0x130 --units
+
 # Testes: roda o exemplo com a amostra real e com os TS sintéticos de tests/
 # (gerados por tests/gerar-sinteticos.py), comparando com a saída esperada.
 test: $(EXAMPLE)
@@ -102,6 +106,8 @@ test: $(EXAMPLE)
 	diff -u tests/sintetico-basico.expected build/test/sintetico-basico.txt
 	./$(EXAMPLE) tests/sintetico-casos-limite.ts 0x130 2>/dev/null > build/test/sintetico-casos-limite.txt
 	diff -u tests/sintetico-casos-limite.expected build/test/sintetico-casos-limite.txt
+	./$(EXAMPLE) tests/sintetico-unidades.ts 0x130 --units 2>/dev/null > build/test/sintetico-unidades.txt
+	diff -u tests/sintetico-unidades.expected build/test/sintetico-unidades.txt
 	@echo "OK: todas as saídas iguais às esperadas."
 	$(MAKE) --no-print-directory test-api
 
@@ -126,6 +132,7 @@ test-sanitize:
 	  -o build/san/example example/main.c $(LIB_OBJS:.o=.c) $(LDFLAGS) $(LDLIBS)
 	$(ASAN_ENV) build/san/example $(SAMPLE_TS) $(SAMPLE_PID) >/dev/null 2>&1
 	$(ASAN_ENV) build/san/example tests/sintetico-casos-limite.ts 0x130 >/dev/null 2>&1
+	$(ASAN_ENV) build/san/example tests/sintetico-unidades.ts 0x130 --units >/dev/null 2>&1
 	@echo "OK: sanitizers sem erro."
 
 # Fuzz com libFuzzer (precisa de clang): make fuzz && build/fuzz-pes -max_total_time=60
@@ -188,4 +195,4 @@ clean:
 
 -include $(LIB_OBJS:.o=.d) example/main.d
 
-.PHONY: all example run-example test test-api test-sanitize fuzz lint check-i18n install uninstall dist docs clean
+.PHONY: all example run-example run-example-units test test-api test-sanitize fuzz lint check-i18n install uninstall dist docs clean

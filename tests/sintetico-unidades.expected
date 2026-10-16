@@ -1,0 +1,44 @@
+[unidade] DRCS de 1 byte(s)
+  codigo=0x4121 fonte=0 modo=0 8x8 gradacoes=2
+    ...11...
+    ..1..1..
+    .1....1.
+    .1....1.
+    .111111.
+    .1....1.
+    .1....1.
+    ........
+  codigo=0x4122 fonte=1 modo=1 4x4 gradacoes=4
+    .123
+    123.
+    23.1
+    3.12
+[unidade] DRCS de 2 byte(s)
+  codigo=0x7a50 fonte=0 modo=0 4x4 gradacoes=2
+    1111
+    ....
+    1..1
+    1111
+  codigo=0x7a51 fonte=2 modo=2 geometrico=5 byte(s) regiao=128x128
+[unidade] bitmap: x=100 y=-20 PNG 4x2 (73 bytes) cores piscando=2
+[unidade] geometrico
+  DOMAIN       opcode=0x21 operandos=3
+  SELECT COLOR opcode=0x3e operandos=2
+  RECT         opcode=0x31 operandos=4
+  LINE         opcode=0x28 operandos=2
+  TEXTURE      opcode=0x23 operandos=1
+[unidade] som sintetizado: 6 byte(s)
+[unidade] DRCS de 1 byte(s)
+  codigo=0x4123 fonte=0 modo=0 2x2 gradacoes=2
+    1.
+    .1
+[superimpose] Primeira mensagem
+com duas linhas
+[superimpose] Segunda mensagem
+[unidade] DRCS de 1 byte(s): invalido
+[superimpose] Depois do DRCS cortado
+[00:00:00.000] Primeira mensagem
+[00:00:00.000] com duas linhas
+[unidade] bitmap: invalido
+[unidade] geometrico: sem comandos
+[00:00:01.000] Depois do DRCS cortado
