@@ -5,6 +5,8 @@ versions follow [SemVer](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-10-16
+
 ### Added
 - Parsers for the DRCS (1 and 2 bytes), bitmap, geometric graphics and synthesized sound data
   units, and `caption_superimpose_new()` (text of the superimpose, one message per data unit)
