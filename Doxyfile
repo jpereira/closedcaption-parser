@@ -10,7 +10,7 @@ OUTPUT_LANGUAGE        = Brazilian
 INPUT_ENCODING         = UTF-8
 
 INPUT                  = README.md \
-                         include \
+                         include/closedcaption \
                          example/main.c \
                          docs/README.md \
                          docs/REVISAO.md

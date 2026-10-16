@@ -1,0 +1,9 @@
+prefix=@PREFIX@
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: libclosedcaption
+Description: ISDB-Tb/SBTVD (ARIB STD-B24) closed caption extractor
+Version: @VERSION@
+Libs: -L${libdir} -lclosedcaption
+Cflags: -I${includedir}

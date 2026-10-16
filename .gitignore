@@ -3,3 +3,6 @@
 *.d
 /example/example
 /build/
+*.a
+*.dylib
+*.pc

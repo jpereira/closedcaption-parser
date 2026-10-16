@@ -10,7 +10,7 @@
  * ./example/example video.ts <pid>    # exibe as legendas do <pid>
  * @endcode
  */
-#include "caption.h"
+#include <closedcaption/caption.h>
 
 /** Imprime uma linha de legenda e conta quantas foram impressas. */
 static void

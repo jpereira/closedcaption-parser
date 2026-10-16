@@ -1,0 +1,43 @@
+# Release: ao empurrar a tag vX.Y.Z, confere com o VERSION, testa e cria a release no
+# GitHub com o tarball + sha256 e as notas do CHANGELOG.md.
+name: Release
+
+on:
+  push:
+    tags: ["v[0-9]*"]
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    uses: ./.github/workflows/ci.yml
+    with:
+      ref: ${{ github.ref }}
+
+  release:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Tag tem que bater com o VERSION
+        run: |
+          [ "v$(cat VERSION)" = "${GITHUB_REF_NAME}" ] || {
+            echo "tag ${GITHUB_REF_NAME} != VERSION $(cat VERSION)"; exit 1; }
+
+      - name: Notas do CHANGELOG.md
+        run: |
+          scripts/release-notes.sh "$(cat VERSION)" > notes.md
+          [ -s notes.md ] || { echo "sem entrada no CHANGELOG pra $(cat VERSION)"; exit 1; }
+
+      - name: Tarball
+        run: make dist
+
+      - name: Cria a release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          name="libclosedcaption-$(cat VERSION).tar.gz"
+          gh release create "$GITHUB_REF_NAME" "build/$name" "build/$name.sha256" \
+            --title "libclosedcaption $(cat VERSION)" --notes-file notes.md --verify-tag

@@ -120,11 +120,11 @@ void helper_print (const char *platform,
 #else
 
 # ifndef ATV_DEBUG
-#  define ATV_DEBUG(fmt, ...)
+#  define ATV_DEBUG(fmt, ...)         do { } while (0)
 # endif
 
 # ifndef ATV_HEXDUMP
-#  define ATV_HEXDUMP(buff, buffLen)
+#  define ATV_HEXDUMP(buff, buffLen)  do { } while (0)
 # endif
 
 #endif /* DEBUG_CLOSEDCAPTION */

@@ -31,6 +31,7 @@
 #ifndef CAPTION_H_
 #define CAPTION_H_
 
+#include "caption-version.h"
 #include "caption-common.h"
 
 #include "packet-pes.h"

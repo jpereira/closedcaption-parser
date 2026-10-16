@@ -1,10 +1,33 @@
 LIBNAME := libclosedcaption.so
-CFLAGS += -W -Wall -fPIC -I. -Iinclude/
+STATICLIB := libclosedcaption.a
+
+# A versão vem do arquivo VERSION (o bump.sh mexe nele)
+VERSION := $(shell cat VERSION)
+MAJOR := $(word 1,$(subst ., ,$(VERSION)))
+
+PREFIX ?= /usr/local
+DESTDIR ?=
+
+CFLAGS += -W -Wall -fPIC -I. -Iinclude/ -Iinclude/closedcaption/ -DCLOSEDCAPTION_VERSION=\"$(VERSION)\"
 
 # Gera os arquivos .d, para recompilar quando um header mudar.
 CFLAGS += -MMD -MP
 
 # Compiladores fora do Xcode (ex: llvm do Homebrew) não acham o SDK sozinhos
+ifeq ($(shell uname -s),Darwin)
+SOEXT = dylib
+SOREAL = libclosedcaption.$(VERSION).dylib
+SOMAJOR = libclosedcaption.$(MAJOR).dylib
+SOLINK = libclosedcaption.dylib
+SOFLAGS = -install_name $(PREFIX)/lib/$(SOMAJOR)
+else
+SOEXT = so
+SOREAL = libclosedcaption.so.$(VERSION)
+SOMAJOR = libclosedcaption.so.$(MAJOR)
+SOLINK = libclosedcaption.so
+SOFLAGS = -Wl,-soname,$(SOMAJOR)
+endif
+
 ifeq ($(shell uname -s),Darwin)
 SDKROOT ?= $(shell xcrun --show-sdk-path)
 CFLAGS += -isysroot $(SDKROOT)
@@ -41,13 +64,15 @@ LIB_OBJS = \
 	src/packet-pes.o                    \
 	src/caption-screen.o                \
 	src/ts-reader.o                     \
-	src/ts-demux.o
+	src/ts-demux.o                      \
+	src/caption-version.o
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 all: $(LIB_OBJS)
-	$(CC) $(LDFLAGS) -shared -o $(LIBNAME) $(LIB_OBJS)
+	$(CC) $(LDFLAGS) -shared $(SOFLAGS) -o $(LIBNAME) $(LIB_OBJS)
+	$(AR) rcs $(STATICLIB) $(LIB_OBJS)
 
 EXAMPLE := example/example
 
@@ -78,16 +103,76 @@ test: $(EXAMPLE)
 	./$(EXAMPLE) tests/sintetico-casos-limite.ts 0x130 2>/dev/null > build/test/sintetico-casos-limite.txt
 	diff -u tests/sintetico-casos-limite.expected build/test/sintetico-casos-limite.txt
 	@echo "OK: todas as saídas iguais às esperadas."
+	$(MAKE) --no-print-directory test-api
+
+# Testes da API (versão, erros, TS/PES quebrado)
+TEST_API := build/test-api
+
+test-api: $(LIB_OBJS)
+	@mkdir -p build
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $(TEST_API) tests/test-api.c $(LIB_OBJS) $(LDLIBS)
+	./$(TEST_API)
+
+# No macOS o ASan não tem detector de leak (e o ASAN_OPTIONS do ambiente pode derrubar o teste)
+ASAN_ENV = ASAN_OPTIONS=detect_leaks=$(if $(filter Darwin,$(shell uname -s)),0,1)
+
+# Mesmos testes com AddressSanitizer + UBSan (usa objetos separados em build/san)
+test-sanitize:
+	@rm -rf build/san && mkdir -p build/san
+	$(CC) $(CFLAGS) -O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer \
+	  -o build/san/test-api tests/test-api.c $(LIB_OBJS:.o=.c) $(LDFLAGS) $(LDLIBS)
+	$(ASAN_ENV) build/san/test-api
+	$(CC) $(CFLAGS) -O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer \
+	  -o build/san/example example/main.c $(LIB_OBJS:.o=.c) $(LDFLAGS) $(LDLIBS)
+	$(ASAN_ENV) build/san/example $(SAMPLE_TS) $(SAMPLE_PID) >/dev/null 2>&1
+	$(ASAN_ENV) build/san/example tests/sintetico-casos-limite.ts 0x130 >/dev/null 2>&1
+	@echo "OK: sanitizers sem erro."
+
+# Fuzz com libFuzzer (precisa de clang): make fuzz && build/fuzz-pes -max_total_time=60
+fuzz:
+	@mkdir -p build
+	clang $(CFLAGS) -O1 -g -fsanitize=fuzzer,address,undefined \
+	  -o build/fuzz-pes tests/fuzz/fuzz-pes.c $(LIB_OBJS:.o=.c) $(LDFLAGS)
+
+# Análise estática
+lint:
+	cppcheck --error-exitcode=1 --enable=warning,portability -q -I include/closedcaption src example
+
+# libclosedcaption.pc
+libclosedcaption.pc: libclosedcaption.pc.in VERSION
+	sed -e 's|@PREFIX@|$(PREFIX)|' -e 's|@VERSION@|$(VERSION)|' $< > $@
+
+install: all libclosedcaption.pc
+	install -d $(DESTDIR)$(PREFIX)/lib/pkgconfig $(DESTDIR)$(PREFIX)/include/closedcaption
+	install -m 0755 $(LIBNAME) $(DESTDIR)$(PREFIX)/lib/$(SOREAL)
+	ln -sf $(SOREAL) $(DESTDIR)$(PREFIX)/lib/$(SOMAJOR)
+	ln -sf $(SOMAJOR) $(DESTDIR)$(PREFIX)/lib/$(SOLINK)
+	install -m 0644 $(STATICLIB) $(DESTDIR)$(PREFIX)/lib/
+	install -m 0644 libclosedcaption.pc $(DESTDIR)$(PREFIX)/lib/pkgconfig/
+	install -m 0644 include/closedcaption/*.h $(DESTDIR)$(PREFIX)/include/closedcaption/
+
+uninstall:
+	rm -f $(DESTDIR)$(PREFIX)/lib/$(SOREAL) $(DESTDIR)$(PREFIX)/lib/$(SOMAJOR) \
+	  $(DESTDIR)$(PREFIX)/lib/$(SOLINK) $(DESTDIR)$(PREFIX)/lib/$(STATICLIB) \
+	  $(DESTDIR)$(PREFIX)/lib/pkgconfig/libclosedcaption.pc
+	rm -rf $(DESTDIR)$(PREFIX)/include/closedcaption
+
+# Tarball da release (git archive): build/libclosedcaption-X.Y.Z.tar.gz
+dist:
+	@mkdir -p build
+	git archive --format=tar.gz --prefix=libclosedcaption-$(VERSION)/ \
+	  -o build/libclosedcaption-$(VERSION).tar.gz HEAD
+	cd build && shasum -a 256 libclosedcaption-$(VERSION).tar.gz > libclosedcaption-$(VERSION).tar.gz.sha256
 
 # Documentação (Doxygen): build/docs/html/index.html
 docs:
 	mkdir -p build/docs
-	doxygen Doxyfile
+	(cat Doxyfile; echo 'PROJECT_NUMBER = $(VERSION)') | doxygen -
 
 clean:
-	rm -f $(LIBNAME) $(LIB_OBJS) $(LIB_OBJS:.o=.d) $(EXAMPLE) example/main.o example/main.d
+	rm -f $(LIBNAME) $(STATICLIB) libclosedcaption.pc $(LIB_OBJS) $(LIB_OBJS:.o=.d) $(EXAMPLE) example/main.o example/main.d
 	rm -rf build
 
 -include $(LIB_OBJS:.o=.d) example/main.d
 
-.PHONY: all example run-example test docs clean
+.PHONY: all example run-example test test-api test-sanitize fuzz lint install uninstall dist docs clean

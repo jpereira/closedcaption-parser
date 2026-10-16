@@ -1,5 +1,10 @@
 # libclosedcaption
 
+[![CI](https://github.com/jpereira/libclosedcaption/actions/workflows/ci.yml/badge.svg)](https://github.com/jpereira/libclosedcaption/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/jpereira/libclosedcaption?display_name=tag)](https://github.com/jpereira/libclosedcaption/releases)
+[![License: LGPL v3](https://img.shields.io/badge/license-LGPL--3.0-blue)](LICENSE)
+[![Docs](https://img.shields.io/badge/docs-doxygen-informational)](https://jpereira.github.io/libclosedcaption/)
+
 Biblioteca em C para extrair o closed caption (legenda oculta) do padrão ISDB-Tb/SBTVD
 (ARIB STD-B24 / ABNT NBR 15606-1) a partir dos pacotes PES de legenda de um MPEG-TS.
 
@@ -7,10 +12,29 @@ A biblioteca não faz o demux do TS: ela recebe o PES da legenda e entrega o tex
 (em UTF-8) e os comandos de controle através de callbacks. O `example/main.c` mostra
 como fazer o demux e usar a API.
 
+## Instalando
+
+```
+make
+sudo make install            # PREFIX=/usr/local por padrão (DESTDIR e PREFIX funcionam)
+```
+
+Instala a `.so` (com soname `libclosedcaption.so.1`), a `.a`, os headers em
+`$PREFIX/include/closedcaption` (use `#include <closedcaption/caption.h>`) e o `libclosedcaption.pc`, então dá pra compilar assim:
+
+```
+cc meu-programa.c $(pkg-config --cflags --libs libclosedcaption)
+```
+
+Tem também a imagem de container no GitHub Packages:
+`docker run --rm -v "$PWD:/d" ghcr.io/jpereira/libclosedcaption /d/video.ts`.
+
+Versão em runtime com `closedcaption_version()` (e `CLOSEDCAPTION_VERSION_*` no header).
+
 ## Estrutura
 
 ```
-include/   headers da biblioteca (caption.h inclui todos)
+include/closedcaption/   headers da biblioteca (caption.h inclui todos)
 src/       implementação
 example/   exemplo de uso: lê um .ts e imprime as legendas
 docs/      amostra de TS com legenda (veja docs/README.md)
@@ -88,7 +112,7 @@ comum em capturas de ISDB-T).
 ## Usando a API
 
 ```c
-#include "caption.h"
+#include <closedcaption/caption.h>
 
 static void on_line (const CaptionLine_t *line, void *userdata)
 {
@@ -135,13 +159,26 @@ O site fica em <https://jpereira.github.io/libclosedcaption/>.
 ## Testes
 
 ```
-make test
+make test           # compara o exemplo com a amostra real e os TS sintéticos + testes da API
+make test-sanitize  # mesma coisa com ASan + UBSan
+make lint           # cppcheck
+make fuzz           # libFuzzer (clang): build/fuzz-pes -max_total_time=60
 ```
 
-Compara a saída do exemplo com a amostra real e com os TS sintéticos de `tests/`.
+O CI roda isso tudo em Linux (gcc/clang) e macOS a cada push. Veja o [CONTRIBUTING](CONTRIBUTING.md).
 
 ## Limitações
 
 - Apenas texto em ISO-8859-15 (legendas brasileiras); legendas japonesas não são suportadas.
 - Os módulos de superimpose (bitmap, DRCS, som, etc.) ainda são apenas esqueletos.
 - Do "caption management data" só o primeiro idioma é lido.
+
+## Releases
+
+Versão no arquivo `VERSION` (SemVer), histórico no [CHANGELOG](CHANGELOG.md).
+O `./bump.sh` fecha a versão atual (commit + tag) e abre a próxima; a tag dispara a release
+com tarball e a imagem de container.
+
+## Licença
+
+LGPL-3.0, veja o [LICENSE](LICENSE). Achou bug de segurança? Veja o [SECURITY](SECURITY.md).
