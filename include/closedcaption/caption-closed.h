@@ -2,16 +2,16 @@
  * @file caption-closed.h
  * @author Jorge Pereira <jpereiran@gmail.com>
  * @date Thu Aug 12 13:49:21 BRT 2010
- * @brief Interpretação do texto da legenda (closed caption) e do seu estado:
- *        cores, tamanho dos caracteres, posição e formato de exibição.
+ * @brief Interpreting the caption (closed caption) text and its state:
+ *        colors, character size, position and display format.
  *
- * caption_closed_run() percorre o @c statement body (texto + comandos de
- * controle) e:
+ * caption_closed_run() walks the @c statement body (text + control
+ * commands) and:
  *
- * - converte cada caractere ISO-8859-15 para UTF-8 e o entrega ao hook de
- *   texto (veja caption-hooking.h);
- * - executa cada comando C0/C1 (veja caption-closed-controls.h), atualiza o
- *   CaptionClosed_t e chama o hook de controles.
+ * - converts each ISO-8859-15 character to UTF-8 and hands it to the text
+ *   hook (see caption-hooking.h);
+ * - runs each C0/C1 command (see caption-closed-controls.h), updates the
+ *   CaptionClosed_t and calls the controls hook.
  */
 #ifndef CAPTION_CLOSED_H_
 #define CAPTION_CLOSED_H_
@@ -21,27 +21,27 @@
 #include "caption-management.h"
 
 /**
- * Tamanho dos caracteres (comandos SSZ, MSZ, NSZ e SZX).
+ * Character size (SSZ, MSZ, NSZ and SZX commands).
  */
 typedef enum {
-  CC_CharacterSize_Small = 0x01,    /**< Pequeno (SSZ). */
-  CC_CharacterSize_Middle = 0x02,   /**< Médio (MSZ). */
+  CC_CharacterSize_Small = 0x01,    /**< Small (SSZ). */
+  CC_CharacterSize_Middle = 0x02,   /**< Medium (MSZ). */
   CC_CharacterSize_Standard = 0x03, /**< Normal (NSZ). */
-  CC_CharacterSize_t_eMax = 0x04,   /**< Limite dos valores acima. */
+  CC_CharacterSize_t_eMax = 0x04,   /**< Limit of the values above. */
 
-  CC_CharacterSize_Custom = 0x05,   /**< Tamanho especificado pelo SZX; o valor está em CaptionClosed_t::char_size_custom. */
-  CC_CharacterSize_UNKNOWN = 0xff   /**< Desconhecido. */
+  CC_CharacterSize_Custom = 0x05,   /**< Size given by SZX; the value is in CaptionClosed_t::char_size_custom. */
+  CC_CharacterSize_UNKNOWN = 0xff   /**< Unknown. */
 } CC_CharacterSize_t;
 
 /**
- * Formato de exibição (ARIB STD-B24, Tabela 9-7; comando CSI SWF).
+ * Display format (ARIB STD-B24, Table 9-7; CSI SWF command).
  */
 typedef enum {
-  CC_Format_HOR_STAN_DENSITY  = 0x00, /**< Horizontal, densidade padrão. */
-  CC_Format_VER_STAN_DENSITY  = 0x01, /**< Vertical, densidade padrão. */
-  CC_Format_HOR_HIGH_DENSITY  = 0x02, /**< Horizontal, alta densidade. */
-  CC_Format_VER_HIGH_DENSITY  = 0x03, /**< Vertical, alta densidade. */
-  CC_Format_HOR_WEST_LANG     = 0x04, /**< Horizontal, idiomas ocidentais. */
+  CC_Format_HOR_STAN_DENSITY  = 0x00, /**< Horizontal, standard density. */
+  CC_Format_VER_STAN_DENSITY  = 0x01, /**< Vertical, standard density. */
+  CC_Format_HOR_HIGH_DENSITY  = 0x02, /**< Horizontal, high density. */
+  CC_Format_VER_HIGH_DENSITY  = 0x03, /**< Vertical, high density. */
+  CC_Format_HOR_WEST_LANG     = 0x04, /**< Horizontal, western languages. */
   CC_Format_HOR_1920x1080     = 0x05, /**< Horizontal, 1920x1080. */
   CC_Format_VER_1920x1080     = 0x06, /**< Vertical, 1920x1080. */
   CC_Format_HOR_960x540       = 0x07, /**< Horizontal, 960x540. */
@@ -50,122 +50,122 @@ typedef enum {
   CC_Format_VER_720x480       = 0x0a, /**< Vertical, 720x480. */
   CC_Format_HOR_1280x720      = 0x0b, /**< Horizontal, 1280x720. */
   CC_Format_VER_1280x720      = 0x0c, /**< Vertical, 1280x720. */
-  CC_Format_t_eMax            = 0x0d  /**< Quantidade de formatos. */
+  CC_Format_t_eMax            = 0x0d  /**< Number of formats. */
 } CC_Format_t;
 
 /**
- * Largura e altura, em pontos.
+ * Width and height, in points.
  */
 typedef struct {
-  uint16_t width;  /**< Largura. */
-  uint16_t height; /**< Altura. */
+  uint16_t width;  /**< Width. */
+  uint16_t height; /**< Height. */
 } CC_Dimension_t;
 
-/** Compara duas CC_Dimension_t. */
+/** Compares two CC_Dimension_t. */
 #define CC_Dimension_is_equal(dimen1, dimen2) \
   ((dimen1).width == (dimen2).width && (dimen1).height == (dimen2).height)
 
 /**
- * Cor RGBA.
+ * RGBA color.
  */
 typedef struct {
-  uint8_t r; /**< Vermelho. */
-  uint8_t g; /**< Verde. */
-  uint8_t b; /**< Azul. */
-  uint8_t a; /**< Opacidade: 0x00 é transparente, 0xff é opaco. */
+  uint8_t r; /**< Red. */
+  uint8_t g; /**< Green. */
+  uint8_t b; /**< Blue. */
+  uint8_t a; /**< Opacity: 0x00 is transparent, 0xff is opaque. */
 } CC_Color_t;
 
-/** Compara duas CC_Color_t. */
+/** Compares two CC_Color_t. */
 #define CC_Color_is_equal(color1, color2) \
   ((color1).r == (color2).r && (color1).g == (color2).g && \
    (color1).b == (color2).b && (color1).a == (color2).a)
 
 /**
- * Cor de raster (comando CSI RCS, Raster Colour Command).
+ * Raster color (CSI RCS command, Raster Colour Command).
  */
 typedef enum {
-  CC_Rcs_BLACK = 0,                  /**< Preto. */
-  CC_Rcs_FULL_INTENSITY_RED = 1,     /**< Vermelho. */
-  CC_Rcs_FULL_INTENSITY_GREEN = 2,   /**< Verde. */
-  CC_Rcs_FULL_INTENSITY_YELLOW = 3,  /**< Amarelo. */
-  CC_Rcs_FULL_INTENSITY_BLUE = 4,    /**< Azul. */
+  CC_Rcs_BLACK = 0,                  /**< Black. */
+  CC_Rcs_FULL_INTENSITY_RED = 1,     /**< Red. */
+  CC_Rcs_FULL_INTENSITY_GREEN = 2,   /**< Green. */
+  CC_Rcs_FULL_INTENSITY_YELLOW = 3,  /**< Yellow. */
+  CC_Rcs_FULL_INTENSITY_BLUE = 4,    /**< Blue. */
   CC_Rcs_FULL_INTENSITY_MAGNETA = 5, /**< Magenta. */
-  CC_Rcs_FULL_INTENSITY_CYAN = 6,    /**< Ciano. */
-  CC_Rcs_FULL_INTENSITY_WHITE = 7,   /**< Branco. */
-  CC_Rcs_TRANSPARENT = 8,            /**< Transparente. */
-  Cc_Rcs_HALF_INTENSITY_RED = 9,     /**< Vermelho, meia intensidade. */
-  Cc_Rcs_HALF_INTENSITY_GREEN = 10,  /**< Verde, meia intensidade. */
-  Cc_Rcs_HALF_INTENSITY_YELLOW = 11, /**< Amarelo, meia intensidade. */
-  Cc_Rcs_HALF_INTENSITY_BLUE = 12,   /**< Azul, meia intensidade. */
-  Cc_Rcs_HALF_INTENSITY_MAGNETA = 13,/**< Magenta, meia intensidade. */
-  Cc_Rcs_HALF_INTENSITY_CYAN = 14,   /**< Ciano, meia intensidade. */
-  Cc_Rcs_HALF_INTENSITY_WHITE = 15,  /**< Branco, meia intensidade. */
-  CC_Rcs_t_eMax = 16                 /**< Quantidade de cores. */
+  CC_Rcs_FULL_INTENSITY_CYAN = 6,    /**< Cyan. */
+  CC_Rcs_FULL_INTENSITY_WHITE = 7,   /**< White. */
+  CC_Rcs_TRANSPARENT = 8,            /**< Transparent. */
+  Cc_Rcs_HALF_INTENSITY_RED = 9,     /**< Red, half intensity. */
+  Cc_Rcs_HALF_INTENSITY_GREEN = 10,  /**< Green, half intensity. */
+  Cc_Rcs_HALF_INTENSITY_YELLOW = 11, /**< Yellow, half intensity. */
+  Cc_Rcs_HALF_INTENSITY_BLUE = 12,   /**< Blue, half intensity. */
+  Cc_Rcs_HALF_INTENSITY_MAGNETA = 13,/**< Magenta, half intensity. */
+  Cc_Rcs_HALF_INTENSITY_CYAN = 14,   /**< Cyan, half intensity. */
+  Cc_Rcs_HALF_INTENSITY_WHITE = 15,  /**< White, half intensity. */
+  CC_Rcs_t_eMax = 16                 /**< Number of colors. */
 } CC_Rcs_t;
 
 /**
- * Estado da legenda, atualizado pelos comandos de controle durante o
+ * Caption state, updated by the control commands during
  * caption_closed_run().
  *
- * Mantenha a mesma estrutura entre os PES de um mesmo PID: alguns comandos
- * (cores, tamanho, formato) valem até serem alterados novamente.
- * Inicialize com zeros.
+ * Keep the same struct between the PES of the same PID: some commands
+ * (colors, size, format) hold until they are changed again.
+ * Initialize it with zeros.
  */
 typedef struct {
-  CC_Format_t format;           /**< Formato de exibição (CSI SWF). */
-  CC_CharacterSize_t char_size; /**< Tamanho dos caracteres (SSZ, MSZ, NSZ, SZX). */
-  CC_Dimension_t SDF;           /**< Tamanho da área de exibição (CSI SDF, Set Display Format). */
-  CC_Dimension_t SDP;           /**< Posição da área de exibição (CSI SDP, Set Display Position). */
-  CC_Dimension_t SSM;           /**< Tamanho do caractere em pontos (CSI SSM). */
-  CC_Rcs_t RCS;                 /**< Cor de raster (CSI RCS). */
-  CC_Color_t foreground;        /**< Cor do texto (BKF ~ WHF, COL). */
-  CC_Color_t background;        /**< Cor de fundo (COL). */
-  CC_Color_t half_foreground;   /**< Cor do texto, meia intensidade (COL). */
-  CC_Color_t half_background;   /**< Cor de fundo, meia intensidade (COL). */
+  CC_Format_t format;           /**< Display format (CSI SWF). */
+  CC_CharacterSize_t char_size; /**< Character size (SSZ, MSZ, NSZ, SZX). */
+  CC_Dimension_t SDF;           /**< Size of the display area (CSI SDF, Set Display Format). */
+  CC_Dimension_t SDP;           /**< Position of the display area (CSI SDP, Set Display Position). */
+  CC_Dimension_t SSM;           /**< Character size in points (CSI SSM). */
+  CC_Rcs_t RCS;                 /**< Raster color (CSI RCS). */
+  CC_Color_t foreground;        /**< Text color (BKF ~ WHF, COL). */
+  CC_Color_t background;        /**< Background color (COL). */
+  CC_Color_t half_foreground;   /**< Text color, half intensity (COL). */
+  CC_Color_t half_background;   /**< Background color, half intensity (COL). */
 
-  /** Posição do cursor (APS, Active Position Set). */
+  /** Cursor position (APS, Active Position Set). */
   struct APS {
-    uint8_t first;  /**< Linha (0 a 63). */
-    uint8_t second; /**< Coluna (0 a 63). */
-  } APS; /**< Posição do cursor (APS). */
+    uint8_t first;  /**< Row (0 to 63). */
+    uint8_t second; /**< Column (0 to 63). */
+  } APS; /**< Cursor position (APS). */
 
-  bool need_clear;                /**< TRUE quando o comando CS (limpar a tela) foi recebido. */
-  uint8_t char_size_custom;       /**< Parâmetro do SZX, quando @ref char_size é @ref CC_CharacterSize_Custom. */
-  uint8_t char_number_in_oneline; /**< Caracteres por linha (CSI SWF). */
-  uint8_t char_line_number;       /**< Quantidade de linhas (CSI SWF). */
-  uint16_t SHS;                   /**< Espaçamento horizontal (CSI SHS, Set Horizontal Spacing). */
-  uint16_t SVS;                   /**< Espaçamento vertical (CSI SVS, Set Vertical Spacing). */
+  bool need_clear;                /**< TRUE when the CS command (clear screen) was received. */
+  uint8_t char_size_custom;       /**< SZX parameter, when @ref char_size is @ref CC_CharacterSize_Custom. */
+  uint8_t char_number_in_oneline; /**< Characters per line (CSI SWF). */
+  uint8_t char_line_number;       /**< Number of lines (CSI SWF). */
+  uint16_t SHS;                   /**< Horizontal spacing (CSI SHS, Set Horizontal Spacing). */
+  uint16_t SVS;                   /**< Vertical spacing (CSI SVS, Set Vertical Spacing). */
 
-  const PES_pts_t *pts;           /**< PTS do PES em processamento; válido apenas durante o caption_closed_run(). */
+  const PES_pts_t *pts;           /**< PTS of the PES being processed; only valid during caption_closed_run(). */
 
-  void *userdata;                 /**< Livre para o usuário; útil para recuperar o contexto dentro dos hooks. */
+  void *userdata;                 /**< Free for the user; handy to get the context back inside the hooks. */
 } CaptionClosed_t;
 
 /**
- * Processa o texto da legenda.
+ * Processes the caption text.
  *
- * Percorre o @c statement body de @p m, entregando cada caractere (em UTF-8)
- * ao hook de texto e executando cada comando de controle (que atualiza @p cc
- * e chama o hook de controles). Veja caption-hooking.h.
+ * Walks the @c statement body of @p m, handing each character (in UTF-8)
+ * to the text hook and running each control command (which updates @p cc
+ * and calls the controls hook). See caption-hooking.h.
  *
- * Caracteres fora do ISO-8859-15 e comandos não suportados em closed caption
- * são ignorados, junto com os seus parâmetros.
+ * Characters outside ISO-8859-15 and commands not supported in closed caption
+ * are ignored, along with their parameters.
  *
- * @param m   Conteúdo do tipo @ref CAPTION_HANDLER_TYPE_STATEMENT_BODY, lido
- *            por caption_management_load().
- * @param cc  Estado da legenda, mantido entre as chamadas.
+ * @param m   Content of type @ref CAPTION_HANDLER_TYPE_STATEMENT_BODY, read
+ *            by caption_management_load().
+ * @param cc  Caption state, kept between calls.
  * @return TRUE.
  */
 bool caption_closed_run (const CaptionManagement_t *m,
                          CaptionClosed_t *cc);
 
 /**
- * Converte um caractere ISO-8859-15 (Latin-9) para UTF-8.
+ * Converts an ISO-8859-15 (Latin-9) character to UTF-8.
  *
- * @param from    Caractere de origem (1 byte).
- * @param to      Recebe o caractere em UTF-8, terminado em '\\0'.
- * @param to_len  Tamanho de @p to; deve ser 4 ou mais.
- * @return A quantidade de bytes escritos em @p to, sem o '\\0' (1 a 3).
+ * @param from    Source character (1 byte).
+ * @param to      Receives the UTF-8 character, '\\0' terminated.
+ * @param to_len  Size of @p to; must be 4 or more.
+ * @return Number of bytes written in @p to, without the '\\0' (1 to 3).
  */
 uint8_t char_latin9_to_utf8 (const char *const from,
                              char *const to,

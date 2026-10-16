@@ -1,19 +1,19 @@
 /**
  * @file ts-demux.h
  * @author Jorge Pereira <jpereiran@gmail.com>
- * @brief Demultiplexador MPEG-TS: tabelas PAT/PMT, estatísticas por PID e
- *        remontagem dos pacotes PES de um PID.
+ * @brief MPEG-TS demuxer: PAT/PMT tables, per PID stats and
+ *        reassembly of the PES packets of one PID.
  *
- * O demux recebe os pacotes TS de 188 bytes (veja ts-reader.h) e:
+ * The demuxer takes the 188 byte TS packets (see ts-reader.h) and:
  *
- * - conta os pacotes de cada PID;
- * - lê a PAT e as PMTs de todos os programas, identificando o tipo de cada
- *   PID (vídeo, áudio, legenda, PCR, etc.);
- * - sugere o PID da legenda, a partir do @c component_tag da PMT;
- * - remonta os pacotes PES de um PID escolhido e entrega cada PES completo
- *   para uma callback (por exemplo, caption_screen_push_pes()).
+ * - counts the packets of each PID;
+ * - reads the PAT and the PMTs of all programs, finding out the type of each
+ *   PID (video, audio, caption, PCR, etc.);
+ * - suggests the caption PID, from the PMT @c component_tag;
+ * - reassembles the PES packets of a chosen PID and hands each whole PES
+ *   to a callback (for example, caption_screen_push_pes()).
  *
- * Exemplo:
+ * Example:
  * @code
  * static void
  * on_pes (const uint8_t *pes, size_t len, void *userdata)
@@ -38,73 +38,73 @@
 #include "caption-common.h"
 #include "ts-reader.h"
 
-/** PID da PAT (Program Association Table). */
+/** PAT PID (Program Association Table). */
 #define TS_PID_PAT  0x0000
 
-/** PID dos pacotes nulos (stuffing). */
+/** PID of the null packets (stuffing). */
 #define TS_PID_NULL 0x1fff
 
-/** Quantidade de PIDs possíveis (13 bits). */
+/** Number of possible PIDs (13 bits). */
 #define TS_PID_MAX  0x2000
 
-/** Valor utilizado para indicar "nenhum PID". */
+/** Value used to say "no PID". */
 #define TS_PID_NONE 0xffff
 
 /**
- * Informações coletadas sobre um PID.
+ * Info collected about a PID.
  */
 typedef struct {
-  uint32_t packets;      /**< Quantidade de pacotes TS recebidos neste PID. */
-  uint16_t program;      /**< @c program_number ao qual o PID pertence, ou 0 quando desconhecido. */
-  bool is_pmt;           /**< O PID carrega a PMT de um programa. */
-  bool is_pcr;           /**< O PID é o PCR de um programa. */
-  bool is_es;            /**< O PID está listado como stream (ES) em alguma PMT. */
-  uint8_t stream_type;   /**< @c stream_type da PMT (válido quando @ref is_es). */
-  int16_t component_tag; /**< @c component_tag da PMT, ou -1 quando não informado. */
+  uint32_t packets;      /**< Number of TS packets received on this PID. */
+  uint16_t program;      /**< @c program_number the PID belongs to, or 0 when unknown. */
+  bool is_pmt;           /**< The PID carries the PMT of a program. */
+  bool is_pcr;           /**< The PID is the PCR of a program. */
+  bool is_es;            /**< The PID is listed as a stream (ES) in some PMT. */
+  uint8_t stream_type;   /**< PMT @c stream_type (valid when @ref is_es). */
+  int16_t component_tag; /**< PMT @c component_tag, or -1 when not informed. */
 } TsPidInfo_t;
 
 /**
- * Callback chamada para cada PES completo do PID escolhido em
+ * Callback called for each whole PES of the PID chosen in
  * ts_demux_set_pes_callback().
  *
- * @param pes       Pacote PES completo, a partir do @c packet_start_code_prefix
- *                  (00 00 01). Só é válido durante a chamada.
- * @param len       Tamanho de @p pes em bytes.
- * @param userdata  Ponteiro informado em ts_demux_set_pes_callback().
+ * @param pes       Whole PES packet, starting at the @c packet_start_code_prefix
+ *                  (00 00 01). Only valid during the call.
+ * @param len       Size of @p pes in bytes.
+ * @param userdata  Pointer given to ts_demux_set_pes_callback().
  */
 typedef void (*TsDemuxPesCallback_t) (const uint8_t *pes,
                                       size_t len,
                                       void *userdata);
 
 /**
- * Demultiplexador MPEG-TS. Estrutura opaca, criada por ts_demux_new().
+ * MPEG-TS demuxer. Opaque struct, created by ts_demux_new().
  */
 typedef struct TsDemux_s TsDemux_t;
 
 /**
- * Cria um demultiplexador.
+ * Creates a demuxer.
  *
- * @return O demux, ou NULL se faltar memória. Liberar com ts_demux_free().
+ * @return The demuxer, or NULL if out of memory. Free with ts_demux_free().
  */
 TsDemux_t *ts_demux_new (void);
 
 /**
- * Libera o demultiplexador. Não chama ts_demux_flush().
+ * Frees the demuxer. Does not call ts_demux_flush().
  *
- * @param demux  Demux criado por ts_demux_new(). Aceita NULL.
+ * @param demux  Demuxer created by ts_demux_new(). NULL is fine.
  */
 void ts_demux_free (TsDemux_t *demux);
 
 /**
- * Escolhe o PID cujos pacotes PES serão remontados e entregues à @p callback.
+ * Chooses the PID whose PES packets will be reassembled and handed to the @p callback.
  *
- * Apenas um PID é remontado por vez. Uma nova chamada substitui a anterior e
- * descarta o PES que estava incompleto.
+ * Only one PID is reassembled at a time. A new call replaces the previous one and
+ * drops the PES that was incomplete.
  *
- * @param demux     Demux criado por ts_demux_new().
- * @param pid       PID a ser remontado, ou @ref TS_PID_NONE para desligar.
- * @param callback  Função chamada para cada PES completo.
- * @param userdata  Repassado para a @p callback.
+ * @param demux     Demuxer created by ts_demux_new().
+ * @param pid       PID to be reassembled, or @ref TS_PID_NONE to turn it off.
+ * @param callback  Function called for each whole PES.
+ * @param userdata  Passed on to the @p callback.
  */
 void ts_demux_set_pes_callback (TsDemux_t *demux,
                                 uint16_t pid,
@@ -112,58 +112,58 @@ void ts_demux_set_pes_callback (TsDemux_t *demux,
                                 void *userdata);
 
 /**
- * Processa um pacote TS.
+ * Processes a TS packet.
  *
- * Pacotes com o @c transport_error_indicator ligado são ignorados. Pacotes
- * perdidos (falha no @c continuity_counter) descartam o PES incompleto.
+ * Packets with the @c transport_error_indicator set are ignored. Lost
+ * packets (@c continuity_counter failure) drop the incomplete PES.
  *
- * @param demux   Demux criado por ts_demux_new().
- * @param packet  Pacote de @ref TS_PACKET_SIZE bytes, iniciando em @ref TS_SYNC_BYTE.
+ * @param demux   Demuxer created by ts_demux_new().
+ * @param packet  Packet of @ref TS_PACKET_SIZE bytes, starting with @ref TS_SYNC_BYTE.
  */
 void ts_demux_push (TsDemux_t *demux,
                     const uint8_t *packet);
 
 /**
- * Entrega o último PES, caso ainda esteja pendente.
+ * Delivers the last PES, if it is still pending.
  *
- * Um PES só é considerado completo quando o próximo começa ou quando atinge o
- * @c PES_packet_length; por isso, chame esta função no final do arquivo.
+ * A PES is only considered complete when the next one starts or when it reaches the
+ * @c PES_packet_length; so call this function at the end of the file.
  *
- * @param demux  Demux criado por ts_demux_new().
+ * @param demux  Demuxer created by ts_demux_new().
  */
 void ts_demux_flush (TsDemux_t *demux);
 
 /**
- * Retorna as informações coletadas sobre um PID.
+ * Returns the info collected about a PID.
  *
- * @param demux  Demux criado por ts_demux_new().
- * @param pid    PID entre 0 e @ref TS_PID_MAX - 1.
- * @return As informações do PID, ou NULL se @p pid for inválido.
+ * @param demux  Demuxer created by ts_demux_new().
+ * @param pid    PID between 0 and @ref TS_PID_MAX - 1.
+ * @return The PID info, or NULL if @p pid is invalid.
  */
 const TsPidInfo_t *ts_demux_get_pid_info (const TsDemux_t *demux,
                                           uint16_t pid);
 
 /**
- * Retorna o PID de legenda sugerido pela PMT.
+ * Returns the caption PID suggested by the PMT.
  *
- * É escolhido o stream privado (@c stream_type 0x06) com @c component_tag de
- * legenda: 0x30 a 0x37 (full-seg) ou 0x87 (one-seg), dando preferência ao
- * menor @c component_tag, ou seja, à legenda principal do full-seg.
+ * It picks the private stream (@c stream_type 0x06) with a caption
+ * @c component_tag: 0x30 to 0x37 (full-seg) or 0x87 (one-seg), preferring the
+ * lowest @c component_tag, that is, the main full-seg caption.
  *
- * @param demux  Demux criado por ts_demux_new().
- * @return O PID da legenda, ou @ref TS_PID_NONE se nenhum foi encontrado.
+ * @param demux  Demuxer created by ts_demux_new().
+ * @return The caption PID, or @ref TS_PID_NONE if none was found.
  */
 uint16_t ts_demux_get_caption_pid (const TsDemux_t *demux);
 
 /**
- * Monta uma descrição legível do PID, por exemplo
+ * Builds a readable description of the PID, for example
  * <tt>"0x06 PES privado (component_tag 0x30, legenda)"</tt>.
  *
- * @param demux  Demux criado por ts_demux_new().
- * @param pid    PID entre 0 e @ref TS_PID_MAX - 1.
- * @param buf    Buffer que recebe a descrição.
- * @param len    Tamanho de @p buf (128 bytes são suficientes).
- * @return O próprio @p buf.
+ * @param demux  Demuxer created by ts_demux_new().
+ * @param pid    PID between 0 and @ref TS_PID_MAX - 1.
+ * @param buf    Buffer that receives the description.
+ * @param len    Size of @p buf (128 bytes is enough).
+ * @return @p buf itself.
  */
 const char *ts_demux_describe_pid (const TsDemux_t *demux,
                                    uint16_t pid,
@@ -171,27 +171,27 @@ const char *ts_demux_describe_pid (const TsDemux_t *demux,
                                    size_t len);
 
 /**
- * Nome do @c stream_type da PMT (ISO/IEC 13818-1, Tabela 2-34).
+ * Name of the PMT @c stream_type (ISO/IEC 13818-1, Table 2-34).
  *
- * @param stream_type  Valor do @c stream_type.
- * @return O nome, por exemplo <tt>"H.264 video"</tt>, ou <tt>"desconhecido"</tt>.
+ * @param stream_type  @c stream_type value.
+ * @return The name, for example <tt>"H.264 video"</tt>, or <tt>"desconhecido"</tt> (unknown).
  */
 const char *ts_stream_type_name (uint8_t stream_type);
 
 /**
- * Nome do @c component_tag no ISDB-T (ARIB TR-B14 / ABNT NBR 15608).
+ * Name of the @c component_tag in ISDB-T (ARIB TR-B14 / ABNT NBR 15608).
  *
- * @param component_tag  Valor do @c component_tag.
+ * @param component_tag  @c component_tag value.
  * @return <tt>"legenda"</tt>, <tt>"legenda one-seg"</tt>, <tt>"superimpose"</tt>,
- *         ou NULL para os demais valores.
+ *         or NULL for the other values.
  */
 const char *ts_component_tag_name (int16_t component_tag);
 
 /**
- * Nome dos PIDs reservados para tabelas do sistema (PAT, NIT, SDT, EIT, etc.).
+ * Name of the PIDs reserved for system tables (PAT, NIT, SDT, EIT, etc.).
  *
- * @param pid  PID a ser consultado.
- * @return O nome da tabela, ou NULL se o PID não é reservado.
+ * @param pid  PID to look up.
+ * @return The table name, or NULL if the PID is not reserved.
  */
 const char *ts_system_pid_name (uint16_t pid);
 

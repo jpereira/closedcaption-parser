@@ -7,12 +7,12 @@ extern "C" {
 
 /**
  * @file caption-version.h
- * @brief Versão da biblioteca (semver, a mesma do arquivo VERSION).
+ * @brief Library version (semver, same as the VERSION file).
  */
 
 /**
- * @name Versão em tempo de compilação
- * Só pra quem quer checar com @c \#if.
+ * @name Compile time version
+ * Only for those who want to check it with @c \#if.
  * @{
  */
 #define CLOSEDCAPTION_VERSION_MAJOR 1
@@ -21,11 +21,11 @@ extern "C" {
 /** @} */
 
 /**
- * Versão da lib que está carregada em runtime, ex.: "1.0.1".
+ * Version of the lib that is loaded at runtime, e.g.: "1.0.1".
  *
- * Bom pra comparar com o CLOSEDCAPTION_VERSION_* do header usado no build.
+ * Good to compare with the CLOSEDCAPTION_VERSION_* of the header used in the build.
  *
- * @return String estática com a versão (não precisa liberar).
+ * @return Static string with the version (no need to free it).
  */
 const char *closedcaption_version (void);
 

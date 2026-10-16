@@ -1,21 +1,21 @@
 /**
  * @file ts-reader.h
  * @author Jorge Pereira <jpereiran@gmail.com>
- * @brief Leitura de arquivos MPEG-TS, pacote a pacote.
+ * @brief Reading MPEG-TS files, packet by packet.
  *
- * O leitor detecta automaticamente o formato do arquivo e entrega sempre
- * pacotes de @ref TS_PACKET_SIZE bytes, prontos para o ts_demux_push().
+ * The reader detects the file format by itself and always hands over
+ * packets of @ref TS_PACKET_SIZE bytes, ready for ts_demux_push().
  *
- * Formatos aceitos:
- * - 188 bytes: MPEG-TS padrão;
- * - 192 bytes: M2TS (4 bytes de timecode antes de cada pacote);
- * - 204 bytes: MPEG-TS com 16 bytes de Reed-Solomon no final de cada pacote,
- *   comum em capturas de ISDB-T.
+ * Accepted formats:
+ * - 188 bytes: standard MPEG-TS;
+ * - 192 bytes: M2TS (4 bytes of timecode before each packet);
+ * - 204 bytes: MPEG-TS with 16 bytes of Reed-Solomon at the end of each packet,
+ *   common in ISDB-T captures.
  *
- * Quando o sincronismo é perdido (byte @ref TS_SYNC_BYTE fora do lugar), o
- * leitor procura o próximo @ref TS_SYNC_BYTE e continua a partir dele.
+ * When sync is lost (the @ref TS_SYNC_BYTE byte is out of place), the
+ * reader looks for the next @ref TS_SYNC_BYTE and keeps going from there.
  *
- * Exemplo:
+ * Example:
  * @code
  * TsReaderError_t error;
  * TsReader_t *reader = ts_reader_open ("video.ts", &error);
@@ -35,39 +35,39 @@
 
 #include "caption-common.h"
 
-/** Tamanho de um pacote MPEG-TS, sem bytes extras de timecode ou Reed-Solomon. */
+/** Size of an MPEG-TS packet, without the extra timecode or Reed-Solomon bytes. */
 #define TS_PACKET_SIZE 188
 
-/** Byte de sincronismo que inicia todo pacote MPEG-TS. */
+/** Sync byte that starts every MPEG-TS packet. */
 #define TS_SYNC_BYTE   0x47
 
 /**
- * Erros retornados por ts_reader_open().
+ * Errors returned by ts_reader_open().
  */
 typedef enum {
-  TS_READER_OK = 0,       /**< Arquivo aberto com sucesso. */
-  TS_READER_ERROR_OPEN,   /**< Não foi possível abrir o arquivo; o motivo está em @c errno. */
-  TS_READER_ERROR_FORMAT, /**< O arquivo não parece ser um MPEG-TS (188, 192 ou 204 bytes). */
-  TS_READER_ERROR_MEMORY  /**< Falha ao alocar memória. */
+  TS_READER_OK = 0,       /**< File opened fine. */
+  TS_READER_ERROR_OPEN,   /**< Could not open the file; the reason is in @c errno. */
+  TS_READER_ERROR_FORMAT, /**< The file doesn't look like an MPEG-TS (188, 192 or 204 bytes). */
+  TS_READER_ERROR_MEMORY  /**< Failed to allocate memory. */
 } TsReaderError_t;
 
 /**
- * Leitor de arquivo MPEG-TS. Estrutura opaca, criada por ts_reader_open().
+ * MPEG-TS file reader. Opaque struct, created by ts_reader_open().
  */
 typedef struct TsReader_s TsReader_t;
 
 /**
- * Detecta o formato dos pacotes a partir do início de um buffer.
+ * Detects the packet format from the start of a buffer.
  *
- * São necessários pelo menos 3 pacotes consecutivos com o byte de
- * sincronismo no lugar certo para que o formato seja reconhecido.
+ * It needs at least 3 consecutive packets with the sync byte
+ * in the right place for the format to be recognized.
  *
- * @param buf          Início do conteúdo do arquivo.
- * @param len          Quantidade de bytes em @p buf (recomendado: 1024 ou mais).
- * @param packet_size  Recebe o tamanho do pacote: 188, 192 ou 204.
- * @param offset       Recebe a posição do @ref TS_SYNC_BYTE dentro do pacote
- *                     (4 para M2TS, 0 para os demais).
- * @return TRUE se o formato foi reconhecido.
+ * @param buf          Start of the file content.
+ * @param len          Number of bytes in @p buf (recommended: 1024 or more).
+ * @param packet_size  Receives the packet size: 188, 192 or 204.
+ * @param offset       Receives the position of the @ref TS_SYNC_BYTE inside the packet
+ *                     (4 for M2TS, 0 for the others).
+ * @return TRUE if the format was recognized.
  */
 bool ts_detect_packet_format (const uint8_t *buf,
                               size_t len,
@@ -75,37 +75,37 @@ bool ts_detect_packet_format (const uint8_t *buf,
                               size_t *offset);
 
 /**
- * Abre um arquivo MPEG-TS para leitura.
+ * Opens an MPEG-TS file for reading.
  *
- * @param filename  Caminho do arquivo.
- * @param error     Opcional (pode ser NULL). Recebe o motivo da falha.
- * @return O leitor, ou NULL em caso de erro. Liberar com ts_reader_close().
+ * @param filename  File path.
+ * @param error     Optional (can be NULL). Receives the reason of the failure.
+ * @return The reader, or NULL on error. Free with ts_reader_close().
  */
 TsReader_t *ts_reader_open (const char *filename,
                             TsReaderError_t *error);
 
 /**
- * Lê o próximo pacote do arquivo.
+ * Reads the next packet of the file.
  *
- * @param reader  Leitor criado por ts_reader_open().
- * @return Ponteiro para os @ref TS_PACKET_SIZE bytes do pacote (já sem o
- *         timecode do M2TS e sem o Reed-Solomon), ou NULL no final do
- *         arquivo. O ponteiro só é válido até a próxima chamada.
+ * @param reader  Reader created by ts_reader_open().
+ * @return Pointer to the @ref TS_PACKET_SIZE bytes of the packet (already without the
+ *         M2TS timecode and without the Reed-Solomon), or NULL at the end of the
+ *         file. The pointer is only valid until the next call.
  */
 const uint8_t *ts_reader_next (TsReader_t *reader);
 
 /**
- * Informa o tamanho dos pacotes no arquivo.
+ * Tells the packet size in the file.
  *
- * @param reader  Leitor criado por ts_reader_open().
- * @return 188, 192 ou 204 bytes.
+ * @param reader  Reader created by ts_reader_open().
+ * @return 188, 192 or 204 bytes.
  */
 size_t ts_reader_get_packet_size (const TsReader_t *reader);
 
 /**
- * Fecha o arquivo e libera o leitor.
+ * Closes the file and frees the reader.
  *
- * @param reader  Leitor criado por ts_reader_open(). Aceita NULL.
+ * @param reader  Reader created by ts_reader_open(). NULL is fine.
  */
 void ts_reader_close (TsReader_t *reader);
 

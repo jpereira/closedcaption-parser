@@ -2,19 +2,19 @@
  * @file caption-common.h
  * @author Jorge Pereira <jpereiran@gmail.com>
  * @date Thu Aug 12 13:49:21 BRT 2010
- * @brief Headers padrão e macros utilitárias usadas por toda a biblioteca.
+ * @brief Standard headers and helper macros used all over the library.
  *
- * <b>Depuração</b>
+ * <b>Debugging</b>
  *
- * Compilando com @c -DDEBUG_CLOSEDCAPTION, as macros @ref DTV_DEBUG e
- * @ref DTV_HEXDUMP passam a imprimir mensagens e dumps hexadecimais no
- * stdout. Sem essa flag, elas não geram código.
+ * Building with @c -DDEBUG_CLOSEDCAPTION, the macros @ref DTV_DEBUG and
+ * @ref DTV_HEXDUMP start printing messages and hex dumps to
+ * stdout. Without that flag they generate no code.
  */
 #ifndef CAPTION_HELPER_H_
 #define CAPTION_HELPER_H_
 
 #ifndef _GNU_SOURCE
-/** Habilita as extensões GNU da libc (ex: declaração de funções POSIX/GNU). */
+/** Enables the libc GNU extensions (e.g. POSIX/GNU function declarations). */
 #define _GNU_SOURCE
 #endif
 
@@ -29,43 +29,43 @@
 #include <errno.h>
 
 /**
- * Verifica se @p x é um caractere imprimível do ISO-8859-15, ou seja, se está
- * nas faixas GL (0x20 a 0x7e) ou GR (0xa1 a 0xfe) da tabela de caracteres.
+ * Checks if @p x is a printable ISO-8859-15 character, that is, if it is
+ * in the GL (0x20 to 0x7e) or GR (0xa1 to 0xfe) ranges of the character table.
  */
 #define is_latin_iso8859_15(x) (((x) >= 0x20 && (x) <= 0x7e) || ((x) >= 0xa1 && (x) <= 0xfe))
 
 #ifdef ARRAY_SIZE
 # undef ARRAY_SIZE
 #endif
-/** Quantidade de elementos de um vetor estático. */
+/** Number of elements of a static array. */
 #define ARRAY_SIZE(x)   ((unsigned)(sizeof(x)/sizeof((x)[0])))
 
-/** Converte um valor booleano em texto, para mensagens de depuração. */
+/** Turns a boolean into text, for debug messages. */
 #define PRINT_BOOL(x)   (((x) == TRUE)?"TRUE":(((x) == FALSE)?"FALSE":"UNKNOWN"))
 
 #undef UNUSED
-/** Marca um parâmetro como não utilizado, evitando o warning do compilador. */
+/** Marks a parameter as unused, to avoid the compiler warning. */
 #define UNUSED(x)       x __attribute__ ((__unused__))
 
 #ifndef FALSE
-/** Falso. Mantido por compatibilidade; equivale a @c false. */
+/** False. Kept for compatibility; same as @c false. */
 #  define FALSE 0
 #endif
 
 #ifndef TRUE
-/** Verdadeiro. Mantido por compatibilidade; equivale a @c true. */
+/** True. Kept for compatibility; same as @c true. */
 #  define TRUE 1
 #endif
 
 #ifdef DEBUG_CLOSEDCAPTION
 
-/** Caractere ASCII visível (sem o espaço), usado no dump hexadecimal. */
+/** Visible ASCII character (no space), used in the hex dump. */
 #define IS_PRINTABLE(a)     ((a) >= 33 && (a) <= 126)
 
 #ifndef DTV_DEBUG
 /**
- * Imprime uma mensagem de depuração, no formato do printf(), com o arquivo,
- * a linha e a função de origem. Só existe com @c -DDEBUG_CLOSEDCAPTION.
+ * Prints a debug message, printf() style, with the file,
+ * line and function it came from. Only exists with @c -DDEBUG_CLOSEDCAPTION.
  */
 # define DTV_DEBUG(fmt, ...)   \
     helper_print("DEBUG", __FILE__, __func__, __LINE__, fmt, ##__VA_ARGS__)
@@ -73,7 +73,7 @@
 
 #ifndef DTV_HEXDUMP
 /**
- * Imprime o dump hexadecimal de um buffer. Só existe com
+ * Prints the hex dump of a buffer. Only exists with
  * @c -DDEBUG_CLOSEDCAPTION.
  */
 # define DTV_HEXDUMP(buff, buffLen)\
@@ -81,16 +81,16 @@
 #endif
 
 /**
- * Imprime o dump hexadecimal de um buffer. Use a macro @ref DTV_HEXDUMP.
+ * Prints the hex dump of a buffer. Use the @ref DTV_HEXDUMP macro.
  *
- * @param platform     Prefixo da mensagem (não utilizado).
- * @param fileFull     Arquivo de origem (@c __FILE__).
- * @param func         Função de origem (@c __func__).
- * @param fileLine     Linha de origem (@c __LINE__).
- * @param namebuff     Nome da variável do buffer.
- * @param namebufflen  Nome da variável do tamanho.
+ * @param platform     Message prefix (not used).
+ * @param fileFull     Source file (@c __FILE__).
+ * @param func         Source function (@c __func__).
+ * @param fileLine     Source line (@c __LINE__).
+ * @param namebuff     Name of the buffer variable.
+ * @param namebufflen  Name of the size variable.
  * @param buff         Buffer.
- * @param buffLen      Tamanho do buffer; acima de 8192 bytes o conteúdo não é impresso.
+ * @param buffLen      Buffer size; above 8192 bytes the content is not printed.
  */
 void helper_hexdump (const char *platform,
                      const char *fileFull,
@@ -102,13 +102,13 @@ void helper_hexdump (const char *platform,
                      size_t buffLen);
 
 /**
- * Imprime uma mensagem de depuração. Use a macro @ref DTV_DEBUG.
+ * Prints a debug message. Use the @ref DTV_DEBUG macro.
  *
- * @param platform  Prefixo da mensagem (não utilizado).
- * @param fileFull  Arquivo de origem (@c __FILE__).
- * @param func      Função de origem (@c __func__).
- * @param line      Linha de origem (@c __LINE__).
- * @param format    Formato, como no printf().
+ * @param platform  Message prefix (not used).
+ * @param fileFull  Source file (@c __FILE__).
+ * @param func      Source function (@c __func__).
+ * @param line      Source line (@c __LINE__).
+ * @param format    Format, like printf().
  */
 void helper_print (const char *platform,
                    const char *fileFull,

@@ -1,18 +1,18 @@
 /**
  * @file example/main.c
  * @author Jorge Pereira <jpereiran@gmail.com>
- * @brief Exemplo de uso da libclosedcaption: lista os PIDs de um arquivo
- *        MPEG-TS (ISDB-T/SBTVD) ou exibe as legendas de um PID.
+ * @brief Usage example for libclosedcaption: lists the PIDs of an
+ *        MPEG-TS file (ISDB-T/SBTVD) or shows the captions of a PID.
  *
- * Uso:
+ * Usage:
  * @code
- * ./example/example video.ts          # lista os PIDs e indica o da legenda
- * ./example/example video.ts <pid>    # exibe as legendas do <pid>
+ * ./example/example video.ts          # lists the PIDs and points out the caption one
+ * ./example/example video.ts <pid>    # shows the captions of <pid>
  * @endcode
  */
 #include <closedcaption/caption.h>
 
-/** Imprime uma linha de legenda e conta quantas foram impressas. */
+/** Prints a caption line and counts how many were printed. */
 static void
 on_line (const CaptionLine_t *line,
          void *userdata)
@@ -26,7 +26,7 @@ on_line (const CaptionLine_t *line,
   (*count)++;
 }
 
-/** Repassa cada PES completo do PID da legenda para a tela. */
+/** Passes each whole PES of the caption PID to the screen. */
 static void
 on_pes (const uint8_t *pes,
         size_t len,
@@ -35,7 +35,7 @@ on_pes (const uint8_t *pes,
   caption_screen_push_pes (userdata, pes, len);
 }
 
-/** Imprime a tabela com todos os PIDs encontrados no arquivo. */
+/** Prints the table with all the PIDs found in the file. */
 static void
 pids_list (const TsDemux_t *demux,
            const char *filename)
@@ -64,7 +64,7 @@ pids_list (const TsDemux_t *demux,
   }
 }
 
-/** Converte o PID informado na linha de comando (decimal ou hexadecimal). */
+/** Converts the PID given on the command line (decimal or hexadecimal). */
 static bool
 parse_pid (const char *arg,
            uint16_t *pid)
@@ -80,12 +80,12 @@ parse_pid (const char *arg,
 }
 
 /**
- * Sem o PID, lista os PIDs do arquivo; com o PID, exibe as legendas dele.
+ * Without the PID, lists the PIDs of the file; with the PID, shows its captions.
  *
- * @param argc  Quantidade de argumentos (2 ou 3).
- * @param argv  Nome do programa, arquivo .ts e, opcionalmente, o PID.
- * @return EXIT_SUCCESS, ou EXIT_FAILURE em caso de erro ou se nenhuma
- *         legenda for encontrada.
+ * @param argc  Number of arguments (2 or 3).
+ * @param argv  Program name, .ts file and, optionally, the PID.
+ * @return EXIT_SUCCESS, or EXIT_FAILURE on error or if no
+ *         caption is found.
  */
 int
 main (int argc,
@@ -154,7 +154,7 @@ main (int argc,
 
   if (screen == NULL)
   {
-    // Sem PID: apenas lista os PIDs.
+    // No PID: just lists the PIDs.
     pids_list (demux, argv[1]);
 
     if (ts_demux_get_caption_pid (demux) == TS_PID_NONE)

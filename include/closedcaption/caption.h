@@ -2,31 +2,31 @@
  * @file caption.h
  * @author Jorge Pereira <jpereiran@gmail.com>
  * @date Thu Aug 12 13:49:21 BRT 2010
- * @brief Header principal: inclui todos os módulos da biblioteca.
+ * @brief Main header: includes all the modules of the library.
  *
- * <b>Visão geral do processamento</b>
+ * <b>Processing overview</b>
  *
  * @verbatim
- *  arquivo .ts
+ *  .ts file
  *     |  ts_reader_next()                       (ts-reader.h)
  *     v
- *  pacotes TS de 188 bytes
+ *  188 byte TS packets
  *     |  ts_demux_push()                        (ts-demux.h)
  *     v
- *  PES completo do PID da legenda
+ *  whole PES of the caption PID
  *     |  caption_screen_push_pes()              (caption-screen.h)
  *     |    packet_pes_load()                    (packet-pes.h)
  *     |    caption_data_load()                  (caption-data.h)
  *     |    caption_management_load()            (caption-management.h)
  *     |    caption_closed_run()                 (caption-closed.h)
- *     |      -> hooks de texto e de controle    (caption-hooking.h)
+ *     |      -> text and control hooks           (caption-hooking.h)
  *     v
- *  linhas de legenda em UTF-8
+ *  caption lines in UTF-8
  * @endverbatim
  *
- * Quem já tem o próprio demux pode chamar caption_screen_push_pes() com os
- * PES da legenda, ou usar diretamente as funções de baixo nível com os hooks
- * de caption-hooking.h.
+ * If you already have your own demux you can call caption_screen_push_pes() with the
+ * caption PES, or use the low level functions directly with the hooks
+ * from caption-hooking.h.
  */
 #ifndef CAPTION_H_
 #define CAPTION_H_
@@ -58,17 +58,17 @@
 # define Dump_CaptionManagement_t(m)
 #else
 /**
- * Imprime todos os campos de um CaptionClosed_t no stdout.
- * Só existe com @c -DDEBUG_CLOSEDCAPTION.
+ * Prints all the fields of a CaptionClosed_t to stdout.
+ * Only exists with @c -DDEBUG_CLOSEDCAPTION.
  */
 # define Dump_CaptionClosed_t(cc)     __Dump_CaptionClosed_t(__FILE__, __LINE__, __func__, cc)
 /**
- * Imprime todos os campos de um CaptionManagement_t no stdout.
- * Só existe com @c -DDEBUG_CLOSEDCAPTION.
+ * Prints all the fields of a CaptionManagement_t to stdout.
+ * Only exists with @c -DDEBUG_CLOSEDCAPTION.
  */
 # define Dump_CaptionManagement_t(m)  __Dump_CaptionManagement_t(__FILE__, __LINE__, __func__, m)
 
-/** @cond INTERNO */
+/** @cond INTERNAL */
 static inline const char *
 __Dump_basename (const char *path)
 {

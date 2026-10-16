@@ -2,12 +2,12 @@
  * @file caption-superimpose-geometric.h
  * @author Jorge Pereira <jpereiran@gmail.com>
  * @date Thu Aug 12 13:49:21 BRT 2010
- * @brief Data unit de gráficos geométricos. <b>Não implementado</b>.
+ * @brief Geometric graphics data unit. <b>Not implemented</b>.
  *
- * Esqueleto para o tratamento das data units do tipo
- * @ref CAPTION_HANDLER_TYPE_GEOMETRIC. Por enquanto apenas aloca a estrutura, sem
- * interpretar os dados (com @c -DDEBUG_CLOSEDCAPTION e
- * @c -DDEBUG_CAPTION_SUPERIMPOSE_GEOMETRIC, imprime o dump da data unit).
+ * Skeleton to handle the data units of type
+ * @ref CAPTION_HANDLER_TYPE_GEOMETRIC. For now it just allocates the struct, without
+ * parsing the data (with @c -DDEBUG_CLOSEDCAPTION and
+ * @c -DDEBUG_CAPTION_SUPERIMPOSE_GEOMETRIC, it prints the data unit dump).
  */
 #ifndef CAPTION_SUPERIMPOSE_GEOMETRIC_H_
 #define CAPTION_SUPERIMPOSE_GEOMETRIC_H_
@@ -17,31 +17,31 @@
 #include "caption-management.h"
 
 /**
- * Data unit de gráficos geométricos. Os campos @c var1 e @c var2 são provisórios.
+ * Geometric graphics data unit. The @c var1 and @c var2 fields are temporary.
  */
 typedef struct CaptionSuperImposeGeometric_t {
-  char *var1;   /**< Provisório: liberado por caption_superimpose_geometric_free(). */
-  uint8_t var2; /**< Provisório. */
+  char *var1;   /**< Temporary: freed by caption_superimpose_geometric_free(). */
+  uint8_t var2; /**< Temporary. */
 
-  const PES_pts_t *pts; /**< Aponta para o PacketPES_t::pts; válido enquanto o PacketPES_t existir. */
-  struct CaptionSuperImposeGeometric_t *next; /**< Próximo item da lista, ou NULL. */
+  const PES_pts_t *pts; /**< Points to PacketPES_t::pts; valid while the PacketPES_t exists. */
+  struct CaptionSuperImposeGeometric_t *next; /**< Next item of the list, or NULL. */
 } CaptionSuperImposeGeometric_t;
 
 /**
- * Cria a estrutura a partir de uma data unit de gráficos geométricos.
+ * Creates the struct from a geometric graphics data unit.
  *
- * @param m  Conteúdo lido por caption_management_load(), do tipo
- *           @ref CAPTION_HANDLER_TYPE_GEOMETRIC, com data unit não vazia.
- * @return A estrutura, ou NULL se faltar memória. Liberar com
+ * @param m  Content read by caption_management_load(), of type
+ *           @ref CAPTION_HANDLER_TYPE_GEOMETRIC, with a non-empty data unit.
+ * @return The struct, or NULL if out of memory. Free with
  *         caption_superimpose_geometric_free().
  */
 CaptionSuperImposeGeometric_t *caption_superimpose_geometric_new (const CaptionManagement_t *m);
 
 /**
- * Libera a estrutura criada por caption_superimpose_geometric_new(), incluindo
- * todos os itens encadeados em @c next.
+ * Frees the struct created by caption_superimpose_geometric_new(), including
+ * all the items chained in @c next.
  *
- * @param cc  A estrutura. Aceita NULL.
+ * @param cc  The struct. NULL is fine.
  */
 void caption_superimpose_geometric_free (CaptionSuperImposeGeometric_t *cc);
 

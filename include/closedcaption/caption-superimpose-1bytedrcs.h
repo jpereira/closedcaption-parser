@@ -2,12 +2,12 @@
  * @file caption-superimpose-1bytedrcs.h
  * @author Jorge Pereira <jpereiran@gmail.com>
  * @date Thu Aug 12 13:49:21 BRT 2010
- * @brief Data unit de DRCS de 1 byte (caracteres desenhados pela emissora). <b>Não implementado</b>.
+ * @brief 1-byte DRCS (characters drawn by the broadcaster) data unit. <b>Not implemented</b>.
  *
- * Esqueleto para o tratamento das data units do tipo
- * @ref CAPTION_HANDLER_TYPE_1BYTE_DRCS. Por enquanto apenas aloca a estrutura, sem
- * interpretar os dados (com @c -DDEBUG_CLOSEDCAPTION e
- * @c -DDEBUG_CAPTION_SUPERIMPOSE_1BYTEDRCS, imprime o dump da data unit).
+ * Skeleton to handle the data units of type
+ * @ref CAPTION_HANDLER_TYPE_1BYTE_DRCS. For now it just allocates the struct, without
+ * parsing the data (with @c -DDEBUG_CLOSEDCAPTION and
+ * @c -DDEBUG_CAPTION_SUPERIMPOSE_1BYTEDRCS, it prints the data unit dump).
  */
 #ifndef CAPTION_SUPERIMPOSE_1BYTEDRCS_H_
 #define CAPTION_SUPERIMPOSE_1BYTEDRCS_H_
@@ -17,31 +17,31 @@
 #include "caption-management.h"
 
 /**
- * Data unit de DRCS de 1 byte (caracteres desenhados pela emissora). Os campos @c var1 e @c var2 são provisórios.
+ * 1-byte DRCS (characters drawn by the broadcaster) data unit. The @c var1 and @c var2 fields are temporary.
  */
 typedef struct CaptionSuperImpose1ByteDrcs_t {
-  char *var1;   /**< Provisório: liberado por caption_superimpose_1bytedrcs_free(). */
-  uint8_t var2; /**< Provisório. */
+  char *var1;   /**< Temporary: freed by caption_superimpose_1bytedrcs_free(). */
+  uint8_t var2; /**< Temporary. */
 
-  const PES_pts_t *pts; /**< Aponta para o PacketPES_t::pts; válido enquanto o PacketPES_t existir. */
-  struct CaptionSuperImpose1ByteDrcs_t *next; /**< Próximo item da lista, ou NULL. */
+  const PES_pts_t *pts; /**< Points to PacketPES_t::pts; valid while the PacketPES_t exists. */
+  struct CaptionSuperImpose1ByteDrcs_t *next; /**< Next item of the list, or NULL. */
 } CaptionSuperImpose1ByteDrcs_t;
 
 /**
- * Cria a estrutura a partir de uma data unit de DRCS de 1 byte (caracteres desenhados pela emissora).
+ * Creates the struct from a 1-byte DRCS (characters drawn by the broadcaster) data unit.
  *
- * @param m  Conteúdo lido por caption_management_load(), do tipo
- *           @ref CAPTION_HANDLER_TYPE_1BYTE_DRCS, com data unit não vazia.
- * @return A estrutura, ou NULL se faltar memória. Liberar com
+ * @param m  Content read by caption_management_load(), of type
+ *           @ref CAPTION_HANDLER_TYPE_1BYTE_DRCS, with a non-empty data unit.
+ * @return The struct, or NULL if out of memory. Free with
  *         caption_superimpose_1bytedrcs_free().
  */
 CaptionSuperImpose1ByteDrcs_t *caption_superimpose_1bytedrcs_new (const CaptionManagement_t *m);
 
 /**
- * Libera a estrutura criada por caption_superimpose_1bytedrcs_new(), incluindo
- * todos os itens encadeados em @c next.
+ * Frees the struct created by caption_superimpose_1bytedrcs_new(), including
+ * all the items chained in @c next.
  *
- * @param cc  A estrutura. Aceita NULL.
+ * @param cc  The struct. NULL is fine.
  */
 void caption_superimpose_1bytedrcs_free (CaptionSuperImpose1ByteDrcs_t *cc);
 
