@@ -2,7 +2,7 @@
 
 🇺🇸 [English](README.md) · 🇧🇷 **Português (pt_BR)**
 
-[![CI](https://github.com/jpereira/libclosedcaption/actions/workflows/ci.yml/badge.svg)](https://github.com/jpereira/libclosedcaption/actions/workflows/ci.yml)
+[![CI](https://github.com/jpereira/libclosedcaption/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/jpereira/libclosedcaption/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/jpereira/libclosedcaption?display_name=tag)](https://github.com/jpereira/libclosedcaption/releases)
 [![License: LGPL v3](https://img.shields.io/badge/license-LGPL--3.0-blue)](LICENSE)
 [![Docs](https://img.shields.io/badge/docs-doxygen-informational)](https://jpereira.github.io/libclosedcaption/pt_BR/)
