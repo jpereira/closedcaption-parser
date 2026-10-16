@@ -1,67 +1,77 @@
 # libclosedcaption
 
+🇺🇸 **English** · 🇧🇷 [Português (pt_BR)](README.pt_BR.md)
+
 [![CI](https://github.com/jpereira/libclosedcaption/actions/workflows/ci.yml/badge.svg)](https://github.com/jpereira/libclosedcaption/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/jpereira/libclosedcaption?display_name=tag)](https://github.com/jpereira/libclosedcaption/releases)
 [![License: LGPL v3](https://img.shields.io/badge/license-LGPL--3.0-blue)](LICENSE)
 [![Docs](https://img.shields.io/badge/docs-doxygen-informational)](https://jpereira.github.io/libclosedcaption/)
 
-Biblioteca em C para extrair o closed caption (legenda oculta) do padrão ISDB-Tb/SBTVD
-(ARIB STD-B24 / ABNT NBR 15606-1) a partir dos pacotes PES de legenda de um MPEG-TS.
+C library to extract closed captions from the subtitle PES packets of an MPEG-TS, following
+the **Brazilian digital TV standard** (ISDB-Tb / SBTVD, ARIB STD-B24 and ABNT NBR 15606-1).
 
-A biblioteca não faz o demux do TS: ela recebe o PES da legenda e entrega o texto
-(em UTF-8) e os comandos de controle através de callbacks. O `example/main.c` mostra
-como fazer o demux e usar a API.
+> **Heads up:** this is a personal project made for the Brazilian DTV world. It targets
+> ISDB-Tb captions (Brazilian Portuguese, ISO-8859-15 text), not the Japanese ISDB-T
+> charsets, and not ATSC/DVB. The code, the comments and the sample stream started in pt_BR
+> (the internal `src/` comments still are) and the English docs are a translation, so some
+> terms come straight from the Brazilian specs (SBTVD, ABNT...). Everything is also
+> available in [pt_BR](README.pt_BR.md).
 
-## Instalando
+The lib doesn't demux the TS for you: you give it the caption PES and it hands back the text
+(UTF-8) and the control commands through callbacks. `example/main.c` shows how to do the
+demux and use the API.
+
+## Installing
 
 ```
 make
-sudo make install            # PREFIX=/usr/local por padrão (DESTDIR e PREFIX funcionam)
+sudo make install            # PREFIX=/usr/local by default (DESTDIR and PREFIX work)
 ```
 
-Instala a `.so` (com soname `libclosedcaption.so.1`), a `.a`, os headers em
-`$PREFIX/include/closedcaption` (use `#include <closedcaption/caption.h>`) e o `libclosedcaption.pc`, então dá pra compilar assim:
+It installs the `.so` (soname `libclosedcaption.so.1`), the `.a`, the headers in
+`$PREFIX/include/closedcaption` (use `#include <closedcaption/caption.h>`) and the
+`libclosedcaption.pc`, so you can build like this:
 
 ```
-cc meu-programa.c $(pkg-config --cflags --libs libclosedcaption)
+cc my-program.c $(pkg-config --cflags --libs libclosedcaption)
 ```
 
-Tem também a imagem de container no GitHub Packages:
+There is also a container image on GitHub Packages:
 `docker run --rm -v "$PWD:/d" ghcr.io/jpereira/libclosedcaption /d/video.ts`.
 
-Versão em runtime com `closedcaption_version()` (e `CLOSEDCAPTION_VERSION_*` no header).
+Runtime version with `closedcaption_version()` (and `CLOSEDCAPTION_VERSION_*` in the header).
 
-## Estrutura
-
-```
-include/closedcaption/   headers da biblioteca (caption.h inclui todos)
-src/       implementação
-example/   exemplo de uso: lê um .ts e imprime as legendas
-docs/      amostra de TS com legenda (veja docs/README.md)
-```
-
-## Compilando
+## Layout
 
 ```
-make                 # gera libclosedcaption.so
-make example         # gera example/example
-make run-example     # roda o exemplo com a amostra de docs/
+include/closedcaption/   library headers (caption.h includes everything)
+src/       implementation
+example/   usage example: reads a .ts and prints the captions
+docs/      sample TS with captions (see docs/README.md)
+```
+
+## Building
+
+```
+make                 # builds libclosedcaption.so
+make example         # builds example/example
+make run-example     # runs the example with the sample from docs/
 make clean
 ```
 
-No macOS o Makefile passa o SDK (`xcrun --show-sdk-path`) para o compilador, então
-funciona também com compiladores fora do Xcode, como o LLVM do Homebrew.
+On macOS the Makefile passes the SDK (`xcrun --show-sdk-path`) to the compiler, so it also
+works with compilers outside Xcode, like Homebrew's LLVM.
 
-## Rodando o exemplo
+## Running the example
 
-1. Compile o exemplo:
+1. Build the example:
 
    ```
    make example
    ```
 
-2. Rode sem informar o PID para listar os PIDs do arquivo. O PID da legenda é
-   identificado pela PMT e marcado com `<- legenda`:
+2. Run it without a PID to list the PIDs in the file. The caption PID is found through the
+   PMT and marked with `<- legenda`:
 
    ```
    ./example/example docs/tv-camara-isdbtb-legenda.ts
@@ -82,7 +92,9 @@ funciona também com compiladores fora do Xcode, como o LLVM do Homebrew.
      ./example/example docs/tv-camara-isdbtb-legenda.ts 0x03ed
    ```
 
-3. Rode novamente passando o PID para exibir as legendas:
+   (The example program output is in pt_BR on purpose, the tests compare against it.)
+
+3. Run it again passing the PID to show the captions:
 
    ```
    ./example/example docs/tv-camara-isdbtb-legenda.ts 0x03ed
@@ -103,13 +115,13 @@ funciona também com compiladores fora do Xcode, como o LLVM do Homebrew.
    10 linha(s) de legenda extraída(s) do PID 0x03ed.
    ```
 
-   O tempo é relativo à primeira legenda. As legendas são impressas no stdout e as
-   mensagens no stderr, então `> legendas.txt` grava apenas o texto.
+   Time is relative to the first caption. Captions go to stdout and messages go to stderr,
+   so `> captions.txt` saves only the text.
 
-O exemplo aceita pacotes de 188 bytes (TS), 192 (M2TS) e 204 (TS com Reed-Solomon,
-comum em capturas de ISDB-T).
+The example takes 188 byte packets (TS), 192 (M2TS) and 204 (TS with Reed-Solomon, common in
+ISDB-T captures).
 
-## Usando a API
+## Using the API
 
 ```c
 #include <closedcaption/caption.h>
@@ -138,47 +150,48 @@ ts_demux_flush (demux);
 caption_screen_flush (screen);
 ```
 
-Quem já tem o próprio demux pode usar só o `caption_screen_push_pes()`, ou as
-funções de baixo nível com os hooks de `caption-hooking.h`. A documentação
-completa é gerada com `make docs` e publicada em
-<https://jpereira.github.io/libclosedcaption/>.
+If you already have your own demux you can use just `caption_screen_push_pes()`, or the
+low level functions with the hooks from `caption-hooking.h`. The full docs are generated with
+`make docs` and published at <https://jpereira.github.io/libclosedcaption/> (English, default)
+and <https://jpereira.github.io/libclosedcaption/pt_BR/> (pt_BR).
 
-## Documentação
+## Documentation
 
-Instale o Doxygen e o Graphviz e execute:
+Install Doxygen and Graphviz and run:
 
 ```
 make docs
 ```
 
-Abra `build/docs/html/index.html` para consultar o site localmente, com o guia de uso
-e a referência da API.
+Open `build/docs/html/index.html` (English) or `build/docs/html/pt_BR/index.html` (pt_BR)
+to browse the site locally, with the usage guide and the API reference.
 
-O site fica em <https://jpereira.github.io/libclosedcaption/>.
+The pt_BR API docs are built from a copy of the headers in `docs/pt_BR/`. If you change a
+declaration, `make check-i18n` tells you when the copy drifted from `include/`.
 
-## Testes
+## Tests
 
 ```
-make test           # compara o exemplo com a amostra real e os TS sintéticos + testes da API
-make test-sanitize  # mesma coisa com ASan + UBSan
+make test           # compares the example with the real sample and the synthetic TS + API tests
+make test-sanitize  # same thing with ASan + UBSan
 make lint           # cppcheck
 make fuzz           # libFuzzer (clang): build/fuzz-pes -max_total_time=60
 ```
 
-O CI roda isso tudo em Linux (gcc/clang) e macOS a cada push. Veja o [CONTRIBUTING](CONTRIBUTING.md).
+CI runs all of it on Linux (gcc/clang) and macOS on every push. See [CONTRIBUTING](CONTRIBUTING.md).
 
-## Limitações
+## Limitations
 
-- Apenas texto em ISO-8859-15 (legendas brasileiras); legendas japonesas não são suportadas.
-- Os módulos de superimpose (bitmap, DRCS, som, etc.) ainda são apenas esqueletos.
-- Do "caption management data" só o primeiro idioma é lido.
+- Only ISO-8859-15 text (Brazilian captions); Japanese captions are not supported.
+- The superimpose modules (bitmap, DRCS, sound, etc.) are still just skeletons.
+- From the "caption management data" only the first language is read.
 
 ## Releases
 
-Versão no arquivo `VERSION` (SemVer), histórico no [CHANGELOG](CHANGELOG.md).
-O `./bump.sh` fecha a versão atual (commit + tag) e abre a próxima; a tag dispara a release
-com tarball e a imagem de container.
+Version in the `VERSION` file (SemVer), history in the [CHANGELOG](CHANGELOG.md).
+`./bump.sh` closes the current version (commit + tag) and opens the next one; the tag fires
+the release with the tarball and the container image.
 
-## Licença
+## License
 
-LGPL-3.0, veja o [LICENSE](LICENSE). Achou bug de segurança? Veja o [SECURITY](SECURITY.md).
+LGPL-3.0, see [LICENSE](LICENSE). Found a security bug? See [SECURITY](SECURITY.md).

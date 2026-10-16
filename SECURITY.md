@@ -1,9 +1,11 @@
-# Segurança
+🇺🇸 **English** · 🇧🇷 [Português (pt_BR)](SECURITY.pt_BR.md)
 
-A lib parseia bytes que vêm de fora (TS/PES), então bug de memória é coisa séria.
+# Security
 
-Achou um crash ou algo explorável? **Não abre issue pública.** Usa o
-[reporte privado do GitHub](https://github.com/jpereira/libclosedcaption/security/advisories/new)
-ou manda e-mail pro jpereiran@gmail.com, de preferência com o arquivo que reproduz.
+The lib parses bytes that come from outside (TS/PES), so a memory bug is a serious thing.
 
-Versões suportadas: só a última release.
+Found a crash or something exploitable? **Please don't open a public issue.** Use GitHub's
+[private report](https://github.com/jpereira/libclosedcaption/security/advisories/new)
+or send an e-mail to jpereiran@gmail.com, ideally with the file that reproduces it.
+
+Supported versions: only the latest release.
