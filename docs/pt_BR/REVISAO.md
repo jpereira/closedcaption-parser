@@ -32,6 +32,7 @@ Resumo dos problemas encontrados e corrigidos na revisão da biblioteca.
 
 ## Limitações conhecidas
 
-- Apenas texto em ISO-8859-15; superimpose e DRCS são esqueletos.
+- Apenas texto em ISO-8859-15; a data unit de mapa de cores é um esqueleto.
+- Parsers de DRCS, bitmap, geométrico e som testados só com streams sintéticos.
 - Hooks globais: não é seguro usar em mais de uma thread.
 - Valores exatos da paleta de meia intensidade não foram conferidos na norma.

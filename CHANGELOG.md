@@ -5,6 +5,17 @@ versions follow [SemVer](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- Parsers for the DRCS (1 and 2 bytes), bitmap, geometric graphics and synthesized sound data
+  units, and `caption_superimpose_new()` (text of the superimpose, one message per data unit)
+- `caption_management_load_unit()` to walk through all the data units of a data group
+- `--units` in the example (and `make run-example-units`) to show those data units
+- `tests/sintetico-unidades.ts`: synthetic stream with one data unit of each type, and tests
+  in `tests/test-api.c`
+
+### Changed
+- `caption_superimpose_new()` replaces the global hooks while it runs and restores them after
+
 ## [1.0.1] - 2026-10-16
 
 First "real" release of the lib.

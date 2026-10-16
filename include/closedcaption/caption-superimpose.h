@@ -6,7 +6,7 @@
  *
  * Superimpose are the messages overlaid on the video that are not part of the
  * program caption (broadcaster notices, alerts). They use the same
- * @c data_group format as the caption (ARIB STD-B24, Volume 3, Chapter 9),
+ * @c data_group format as the caption (ARIB STD-B24, Volume 1, Part 3, Chapter 9),
  * but on their own PID (@c component_tag 0x38 to 0x3f).
  *
  * Each text data unit (@ref CAPTION_HANDLER_TYPE_STATEMENT_BODY) of the data group becomes one

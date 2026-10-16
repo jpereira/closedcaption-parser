@@ -10,6 +10,9 @@
 Biblioteca em C para extrair o closed caption (legenda oculta) do padrão ISDB-Tb/SBTVD
 (ARIB STD-B24 / ABNT NBR 15606-1) a partir dos pacotes PES de legenda de um MPEG-TS.
 
+Ela foi usada, e ainda está em uso, em várias TVs vendidas no Brasil que seguem o padrão
+brasileiro de TV digital (DTV ISDB-Tb).
+
 A biblioteca não faz o demux do TS: ela recebe o PES da legenda e entrega o texto
 (em UTF-8) e os comandos de controle através de callbacks. O `example/main.c` mostra
 como fazer o demux e usar a API.
@@ -105,6 +108,12 @@ funciona também com compiladores fora do Xcode, como o LLVM do Homebrew.
    10 linha(s) de legenda extraída(s) do PID 0x03ed.
    ```
 
+   Para ver também as data units de DRCS, bitmap, geométrico, som e superimpose, use `--units`:
+
+   ```
+   ./example/example tests/sintetico-unidades.ts 0x130 --units
+   ```
+
    O tempo é relativo à primeira legenda. As legendas são impressas no stdout e as
    mensagens no stderr, então `> legendas.txt` grava apenas o texto.
 
@@ -172,7 +181,11 @@ O CI roda isso tudo em Linux (gcc/clang) e macOS a cada push. Veja o [CONTRIBUTI
 ## Limitações
 
 - Apenas texto em ISO-8859-15 (legendas brasileiras); legendas japonesas não são suportadas.
-- Os módulos de superimpose (bitmap, DRCS, som, etc.) ainda são apenas esqueletos.
+- O texto do superimpose e as data units de DRCS (1 e 2 bytes), bitmap, gráficos geométricos e
+  som são lidos, mas a lib não desenha nem toca nada: ela entrega os dados para a aplicação.
+  A data unit de mapa de cores ainda é um esqueleto.
+- Os parsers de DRCS, bitmap, geométrico e som só foram testados com streams sintéticos
+  (`tests/sintetico-unidades.ts`), as capturas reais que achei não têm essas data units.
 - Do "caption management data" só o primeiro idioma é lido.
 
 ## Releases

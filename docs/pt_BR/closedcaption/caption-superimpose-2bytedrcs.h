@@ -2,12 +2,12 @@
  * @file caption-superimpose-2bytedrcs.h
  * @author Jorge Pereira <jpereiran@gmail.com>
  * @date Thu Aug 12 13:49:21 BRT 2010
- * @brief Data unit de DRCS de 2 bytes (caracteres desenhados pela emissora). <b>Não implementado</b>.
+ * @brief Data unit de DRCS de 2 bytes (caracteres desenhados pela emissora).
  *
- * Esqueleto para o tratamento das data units do tipo
- * @ref CAPTION_HANDLER_TYPE_2BYTE_DRCS. Por enquanto apenas aloca a estrutura, sem
- * interpretar os dados (com @c -DDEBUG_CLOSEDCAPTION e
- * @c -DDEBUG_CAPTION_SUPERIMPOSE_2BYTEDRCS, imprime o dump da data unit).
+ * Lê as data units do tipo @ref CAPTION_HANDLER_TYPE_2BYTE_DRCS. A sintaxe é a mesma
+ * do DRCS de 1 byte (ARIB STD-B24, Volume 1, Part 2, Annex D); só muda o significado do
+ * @c character_code: aqui os dois bytes são o próprio código do caractere suplementar
+ * (Gaiji). Por isso a struct é a mesma do caption-superimpose-1bytedrcs.h.
  */
 #ifndef CAPTION_SUPERIMPOSE_2BYTEDRCS_H_
 #define CAPTION_SUPERIMPOSE_2BYTEDRCS_H_
@@ -15,33 +15,29 @@
 #include "caption-common.h"
 #include "caption-data.h"
 #include "caption-management.h"
+#include "caption-superimpose-1bytedrcs.h"
 
 /**
- * Data unit de DRCS de 2 bytes (caracteres desenhados pela emissora). Os campos @c var1 e @c var2 são provisórios.
+ * Uma fonte de um caractere DRCS de 2 bytes: os mesmos campos de CaptionSuperImpose1ByteDrcs_t,
+ * mas o @c character_code é o código de 2 bytes do caractere.
  */
-typedef struct CaptionSuperImpose2ByteDrcs_t {
-  char *var1;   /**< Provisório: liberado por caption_superimpose_2bytedrcs_free(). */
-  uint8_t var2; /**< Provisório. */
-
-  const PES_pts_t *pts; /**< Aponta para o PacketPES_t::pts; válido enquanto o PacketPES_t existir. */
-  struct CaptionSuperImpose2ByteDrcs_t *next; /**< Próximo item da lista, ou NULL. */
-} CaptionSuperImpose2ByteDrcs_t;
+typedef CaptionSuperImpose1ByteDrcs_t CaptionSuperImpose2ByteDrcs_t;
 
 /**
- * Cria a estrutura a partir de uma data unit de DRCS de 2 bytes (caracteres desenhados pela emissora).
+ * Cria a lista a partir de uma data unit de DRCS de 2 bytes (caracteres desenhados pela emissora).
  *
- * @param m  Conteúdo lido por caption_management_load(), do tipo
+ * @param m  Conteúdo lido por caption_management_load() ou caption_management_load_unit(), do tipo
  *           @ref CAPTION_HANDLER_TYPE_2BYTE_DRCS, com data unit não vazia.
- * @return A estrutura, ou NULL se faltar memória. Liberar com
- *         caption_superimpose_2bytedrcs_free().
+ * @return A lista, ou NULL se faltou memória, se a data unit não tem caractere ou se está
+ *         truncada/inválida. Libere com caption_superimpose_2bytedrcs_free().
  */
 CaptionSuperImpose2ByteDrcs_t *caption_superimpose_2bytedrcs_new (const CaptionManagement_t *m);
 
 /**
- * Libera a estrutura criada por caption_superimpose_2bytedrcs_new(), incluindo
+ * Libera a lista criada por caption_superimpose_2bytedrcs_new(), incluindo
  * todos os itens encadeados em @c next.
  *
- * @param cc  A estrutura. Aceita NULL.
+ * @param cc  A lista. NULL é aceito.
  */
 void caption_superimpose_2bytedrcs_free (CaptionSuperImpose2ByteDrcs_t *cc);
 

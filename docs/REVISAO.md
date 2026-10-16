@@ -32,6 +32,7 @@ Quick summary of the problems found and fixed during the library review.
 
 ## Known limitations
 
-- Only ISO-8859-15 text; superimpose and DRCS are skeletons.
+- Only ISO-8859-15 text; the color map data unit is a skeleton.
+- DRCS, bitmap, geometric and sound parsers only tested with synthetic streams.
 - Global hooks: not safe to use from more than one thread.
 - The exact half intensity palette values were not checked against the spec.

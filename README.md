@@ -10,6 +10,9 @@
 C library to extract closed captions from the subtitle PES packets of an MPEG-TS, following
 the **Brazilian digital TV standard** (ISDB-Tb / SBTVD, ARIB STD-B24 and ABNT NBR 15606-1).
 
+It was used, and is still in use, in several TVs sold in Brazil that follow the Brazilian
+digital TV standard (DTV ISDB-Tb).
+
 > **Heads up:** this is a personal project made for the Brazilian DTV world. It targets
 > ISDB-Tb captions (Brazilian Portuguese, ISO-8859-15 text), not the Japanese ISDB-T
 > charsets, and not ATSC/DVB. The code, the comments and the sample stream started in pt_BR
@@ -115,6 +118,12 @@ works with compilers outside Xcode, like Homebrew's LLVM.
    10 linha(s) de legenda extraída(s) do PID 0x03ed.
    ```
 
+   To also see the DRCS, bitmap, geometric, sound and superimpose data units, add `--units`:
+
+   ```
+   ./example/example tests/sintetico-unidades.ts 0x130 --units
+   ```
+
    Time is relative to the first caption. Captions go to stdout and messages go to stderr,
    so `> captions.txt` saves only the text.
 
@@ -183,7 +192,11 @@ CI runs all of it on Linux (gcc/clang) and macOS on every push. See [CONTRIBUTIN
 ## Limitations
 
 - Only ISO-8859-15 text (Brazilian captions); Japanese captions are not supported.
-- The superimpose modules (bitmap, DRCS, sound, etc.) are still just skeletons.
+- Superimpose text, DRCS (1 and 2 bytes), bitmap, geometric graphics and sound data units are
+  read, but the lib does not draw or play anything: it hands the data to the application. The
+  color map data unit is still a skeleton.
+- The DRCS, bitmap, geometric and sound parsers were only tested with synthetic streams
+  (`tests/sintetico-unidades.ts`), the real captures I found do not have them.
 - From the "caption management data" only the first language is read.
 
 ## Releases
